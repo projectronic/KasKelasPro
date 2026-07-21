@@ -6,6 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/currency-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { IuranType } from "@/lib/supabase/types";
 
 type ActionState = { error?: string } | null;
@@ -39,15 +46,15 @@ export function SettingsForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="iuran_type">Mode Iuran</Label>
-        <select
-          id="iuran_type"
-          name="iuran_type"
-          defaultValue={iuranType}
-          className="h-9 rounded-md border bg-transparent px-3 text-sm"
-        >
-          <option value="harian">Harian</option>
-          <option value="bulanan">Bulanan</option>
-        </select>
+        <Select name="iuran_type" defaultValue={iuranType}>
+          <SelectTrigger id="iuran_type" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="harian">Harian</SelectItem>
+            <SelectItem value="bulanan">Bulanan</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="iuran_amount">Nominal Iuran Default (Rp)</Label>

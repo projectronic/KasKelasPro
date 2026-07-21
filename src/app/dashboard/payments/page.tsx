@@ -61,6 +61,13 @@ export default async function PaymentsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Pembayaran</h1>
+        <p className="text-sm text-muted-foreground">
+          Catat iuran masuk dan lihat riwayat pembayaran terbaru.
+        </p>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Catat Pembayaran Iuran</CardTitle>
@@ -86,30 +93,75 @@ export default async function PaymentsPage() {
           <CardTitle>Pembayaran Terbaru</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Anggota</TableHead>
-                <TableHead>Periode</TableHead>
-                <TableHead>Nominal</TableHead>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Catatan</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentPayments?.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>{memberNames.get(p.member_id) ?? "-"}</TableCell>
-                  <TableCell>{p.period}</TableCell>
-                  <TableCell>Rp {p.amount.toLocaleString("id-ID")}</TableCell>
-                  <TableCell>
-                    {new Date(p.paid_at).toLocaleDateString("id-ID")}
-                  </TableCell>
-                  <TableCell>{p.note ?? "-"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          {!recentPayments?.length ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Belum ada pembayaran tercatat.
+            </p>
+          ) : (
+            <>
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Anggota</TableHead>
+                      <TableHead>Periode</TableHead>
+                      <TableHead>Nominal</TableHead>
+                      <TableHead>Tanggal</TableHead>
+                      <TableHead>Catatan</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentPayments.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="font-medium">
+                          {memberNames.get(p.member_id) ?? "-"}
+                        </TableCell>
+                        <TableCell>{p.period}</TableCell>
+                        <TableCell>Rp {p.amount.toLocaleString("id-ID")}</TableCell>
+                        <TableCell>
+                          {new Date(p.paid_at).toLocaleDateString("id-ID")}
+                        </TableCell>
+                        <TableCell>{p.note ?? "-"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="grid gap-3 md:hidden">
+                {recentPayments.map((p) => (
+                  <div key={p.id} className="rounded-lg border p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="font-medium">
+                        {memberNames.get(p.member_id) ?? "-"}
+                      </span>
+                      <span className="font-semibold">
+                        Rp {p.amount.toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
+                      <div className="flex justify-between gap-2">
+                        <span>Periode</span>
+                        <span className="text-foreground">{p.period}</span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span>Tanggal</span>
+                        <span className="text-foreground">
+                          {new Date(p.paid_at).toLocaleDateString("id-ID")}
+                        </span>
+                      </div>
+                      {p.note && (
+                        <div className="flex justify-between gap-2">
+                          <span>Catatan</span>
+                          <span className="text-right text-foreground">{p.note}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

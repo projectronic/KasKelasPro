@@ -31,7 +31,7 @@ export function DuesOverrideForm() {
     <form
       ref={formRef}
       action={formAction}
-      className="grid grid-cols-3 items-end gap-2"
+      className="grid grid-cols-1 items-end gap-2 sm:grid-cols-3"
     >
       <div className="flex flex-col gap-2">
         <Label htmlFor="period">Periode</Label>

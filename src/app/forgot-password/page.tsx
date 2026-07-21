@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { Landmark } from "lucide-react";
 import { requestPasswordReset } from "./actions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,10 @@ export default function ForgotPasswordPage() {
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-sm">
-        <CardHeader>
+        <CardHeader className="items-center text-center">
+          <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Landmark className="size-5" />
+          </div>
           <CardTitle>Lupa Password</CardTitle>
           <CardDescription>
             Masukkan email yang kamu pakai untuk login. Kami kirim link

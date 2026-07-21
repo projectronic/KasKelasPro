@@ -6,18 +6,27 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/currency-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type ActionState = { error?: string } | null;
 
 export function WithdrawalForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [formKey, setFormKey] = useState(0);
+  const [wallet, setWallet] = useState("bank");
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
       const result = await withdrawFunds(formData);
       if (!result?.error) {
         formRef.current?.reset();
         setFormKey((k) => k + 1);
+        setWallet("bank");
       }
       return result ?? null;
     },
@@ -32,15 +41,16 @@ export function WithdrawalForm() {
     >
       <div className="flex flex-col gap-2">
         <Label htmlFor="withdraw_wallet">Dari</Label>
-        <select
-          id="withdraw_wallet"
-          name="wallet"
-          defaultValue="bank"
-          className="h-9 rounded-md border bg-transparent px-3 text-sm"
-        >
-          <option value="dompet">Dompet</option>
-          <option value="bank">Bank</option>
-        </select>
+        <input type="hidden" name="wallet" value={wallet} />
+        <Select value={wallet} onValueChange={(v) => v && setWallet(v)}>
+          <SelectTrigger id="withdraw_wallet" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="dompet">Dompet</SelectItem>
+            <SelectItem value="bank">Bank</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="withdraw_amount">Nominal (Rp)</Label>
@@ -56,7 +66,7 @@ export function WithdrawalForm() {
           required
         />
       </div>
-      <div className="col-span-2 flex flex-col gap-2">
+      <div className="col-span-full flex flex-col gap-2 sm:col-span-2 lg:col-span-1">
         <Label htmlFor="reason">Alasan Penarikan</Label>
         <Input id="reason" name="reason" placeholder="mis. beli alat kebersihan kelas" required />
       </div>

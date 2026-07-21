@@ -56,20 +56,31 @@ export default async function WalletPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Dompet</h1>
+        <p className="text-sm text-muted-foreground">
+          Kelola saldo, mutasi, dan penarikan dana kas.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Saldo Dompet</CardTitle>
+            <CardTitle className="text-sm font-normal text-muted-foreground">
+              Saldo Dompet
+            </CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
+          <CardContent className="text-2xl font-semibold tracking-tight">
             Rp {dompet.toLocaleString("id-ID")}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm text-muted-foreground">Saldo Bank</CardTitle>
+            <CardTitle className="text-sm font-normal text-muted-foreground">
+              Saldo Bank
+            </CardTitle>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold">
+          <CardContent className="text-2xl font-semibold tracking-tight">
             Rp {bank.toLocaleString("id-ID")}
           </CardContent>
         </Card>
@@ -100,40 +111,78 @@ export default async function WalletPage() {
           <CardTitle>Riwayat Mutasi</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Dompet</TableHead>
-                <TableHead>Jenis</TableHead>
-                <TableHead>Nominal</TableHead>
-                <TableHead>Catatan</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {history?.map((h) => (
-                <TableRow key={h.id}>
-                  <TableCell>
-                    {new Date(h.created_at).toLocaleDateString("id-ID")}
-                  </TableCell>
-                  <TableCell className="capitalize">{h.wallet}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        h.type === "deposit" || h.type === "transfer_in"
-                          ? "default"
-                          : "secondary"
-                      }
-                    >
-                      {TYPE_LABEL[h.type] ?? h.type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>Rp {h.amount.toLocaleString("id-ID")}</TableCell>
-                  <TableCell>{h.note ?? "-"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          {!history?.length ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Belum ada mutasi tercatat.
+            </p>
+          ) : (
+            <>
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tanggal</TableHead>
+                      <TableHead>Dompet</TableHead>
+                      <TableHead>Jenis</TableHead>
+                      <TableHead>Nominal</TableHead>
+                      <TableHead>Catatan</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {history.map((h) => (
+                      <TableRow key={h.id}>
+                        <TableCell>
+                          {new Date(h.created_at).toLocaleDateString("id-ID")}
+                        </TableCell>
+                        <TableCell className="capitalize">{h.wallet}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              h.type === "deposit" || h.type === "transfer_in"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {TYPE_LABEL[h.type] ?? h.type}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>Rp {h.amount.toLocaleString("id-ID")}</TableCell>
+                        <TableCell>{h.note ?? "-"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="grid gap-3 md:hidden">
+                {history.map((h) => (
+                  <div key={h.id} className="rounded-lg border p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="capitalize font-medium">{h.wallet}</span>
+                        <Badge
+                          variant={
+                            h.type === "deposit" || h.type === "transfer_in"
+                              ? "default"
+                              : "secondary"
+                          }
+                        >
+                          {TYPE_LABEL[h.type] ?? h.type}
+                        </Badge>
+                      </div>
+                      <span className="font-semibold">
+                        Rp {h.amount.toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex justify-between text-sm text-muted-foreground">
+                      <span>{new Date(h.created_at).toLocaleDateString("id-ID")}</span>
+                      {h.note && <span className="text-right text-foreground">{h.note}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

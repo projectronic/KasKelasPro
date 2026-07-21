@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Footer } from "@/components/footer";
 import { createClient } from "@/lib/supabase/server";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,10 +42,12 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="flex min-h-full flex-col">
-            <div className="flex-1">{children}</div>
-            <Footer />
-          </div>
+          <TooltipProvider>
+            <div className="flex min-h-full flex-col">
+              <div className="flex-1">{children}</div>
+              <Footer />
+            </div>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

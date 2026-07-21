@@ -46,53 +46,88 @@ export default async function RiwayatPage() {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Riwayat Aktivitas</CardTitle>
-        <CardDescription>
-          Log pembayaran, penarikan/transfer dana, dan approval pendaftaran
-          — 100 aktivitas terbaru. Hanya admin/editor yang bisa lihat.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tanggal</TableHead>
-              <TableHead>Jam</TableHead>
-              <TableHead>Pengguna</TableHead>
-              <TableHead>Tindakan</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {log?.map((entry) => {
-              const date = new Date(entry.created_at);
-              return (
-                <TableRow key={entry.id}>
-                  <TableCell>{date.toLocaleDateString("id-ID")}</TableCell>
-                  <TableCell>
-                    {date.toLocaleTimeString("id-ID", {
-                      hour: "2-digit",
-                      minute: "2-digit",
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Riwayat</h1>
+        <p className="text-sm text-muted-foreground">
+          Log aktivitas 100 entri terbaru.
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Riwayat Aktivitas</CardTitle>
+          <CardDescription>
+            Log pembayaran, penarikan/transfer dana, dan approval pendaftaran
+            — 100 aktivitas terbaru. Hanya admin/editor yang bisa lihat.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!log?.length ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Belum ada aktivitas tercatat.
+            </p>
+          ) : (
+            <>
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tanggal</TableHead>
+                      <TableHead>Jam</TableHead>
+                      <TableHead>Pengguna</TableHead>
+                      <TableHead>Tindakan</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {log.map((entry) => {
+                      const date = new Date(entry.created_at);
+                      return (
+                        <TableRow key={entry.id}>
+                          <TableCell>{date.toLocaleDateString("id-ID")}</TableCell>
+                          <TableCell>
+                            {date.toLocaleTimeString("id-ID", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {entry.actor_id ? actorNames.get(entry.actor_id) ?? "-" : "-"}
+                          </TableCell>
+                          <TableCell>{entry.action}</TableCell>
+                        </TableRow>
+                      );
                     })}
-                  </TableCell>
-                  <TableCell>
-                    {entry.actor_id ? actorNames.get(entry.actor_id) ?? "-" : "-"}
-                  </TableCell>
-                  <TableCell>{entry.action}</TableCell>
-                </TableRow>
-              );
-            })}
-            {!log?.length && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
-                  Belum ada aktivitas tercatat.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className="grid gap-3 md:hidden">
+                {log.map((entry) => {
+                  const date = new Date(entry.created_at);
+                  return (
+                    <div key={entry.id} className="rounded-lg border p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-medium">
+                          {entry.actor_id ? actorNames.get(entry.actor_id) ?? "-" : "-"}
+                        </span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {date.toLocaleDateString("id-ID")}{" "}
+                          {date.toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">{entry.action}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

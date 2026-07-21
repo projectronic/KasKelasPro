@@ -9,6 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/currency-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type ActionState = { error?: string } | null;
 type Member = { id: string; full_name: string; join_date: string };
@@ -76,6 +83,7 @@ function DailyPaymentForm({
   const [amount, setAmount] = useState(
     getRateForPeriod(initialPeriod, defaultAmount, overridesMap)
   );
+  const [memberId, setMemberId] = useState("");
 
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
@@ -85,6 +93,7 @@ function DailyPaymentForm({
         formRef.current?.reset();
         setPeriod(initialPeriod);
         setAmount(getRateForPeriod(initialPeriod, defaultAmount, overridesMap));
+        setMemberId("");
       }
       return result ?? null;
     },
@@ -99,19 +108,19 @@ function DailyPaymentForm({
     >
       <div className="flex flex-col gap-2">
         <Label htmlFor="member_id">Anggota</Label>
-        <select
-          id="member_id"
-          name="member_id"
-          required
-          className="h-9 rounded-md border bg-transparent px-3 text-sm"
-        >
-          <option value="">Pilih anggota</option>
-          {members.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.full_name}
-            </option>
-          ))}
-        </select>
+        <input type="hidden" name="member_id" value={memberId} />
+        <Select value={memberId} onValueChange={(v) => v && setMemberId(v)}>
+          <SelectTrigger id="member_id" className="w-full">
+            <SelectValue placeholder="Pilih anggota" />
+          </SelectTrigger>
+          <SelectContent>
+            {members.map((m) => (
+              <SelectItem key={m.id} value={m.id}>
+                {m.full_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="period">Periode (YYYY-MM-DD)</Label>
@@ -154,7 +163,7 @@ function DailyPaymentForm({
         {state?.error && (
           <p className="text-sm text-destructive">{state.error}</p>
         )}
-        <Button type="submit" disabled={isPending} className="w-fit">
+        <Button type="submit" disabled={isPending || !memberId} className="w-fit">
           {isPending ? "Menyimpan..." : "Catat Pembayaran"}
         </Button>
       </div>

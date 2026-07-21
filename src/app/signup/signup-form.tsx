@@ -6,6 +6,7 @@ import { signup } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ActionState = { error?: string; success?: string } | null;
 type RegistrantType = "siswa" | "orang_tua";
@@ -24,23 +25,20 @@ export function SignupForm() {
       <form action={formAction} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <Label>Daftar sebagai</Label>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              type="button"
-              variant={registrantType === "siswa" ? "default" : "outline"}
-              onClick={() => setRegistrantType("siswa")}
-            >
-              Siswa
-            </Button>
-            <Button
-              type="button"
-              variant={isParent ? "default" : "outline"}
-              onClick={() => setRegistrantType("orang_tua")}
-            >
-              Orang Tua/Wali
-            </Button>
-          </div>
           <input type="hidden" name="registrant_type" value={registrantType} />
+          <Tabs
+            value={registrantType}
+            onValueChange={(v) => v && setRegistrantType(v as RegistrantType)}
+          >
+            <TabsList className="w-full">
+              <TabsTrigger value="siswa" className="flex-1">
+                Siswa
+              </TabsTrigger>
+              <TabsTrigger value="orang_tua" className="flex-1">
+                Orang Tua/Wali
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         <div className="flex flex-col gap-2">

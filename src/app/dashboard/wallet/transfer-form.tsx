@@ -6,18 +6,29 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CurrencyInput } from "@/components/currency-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type ActionState = { error?: string } | null;
 
 export function TransferForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [formKey, setFormKey] = useState(0);
+  const [fromWallet, setFromWallet] = useState("dompet");
+  const [toWallet, setToWallet] = useState("bank");
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
       const result = await transferFunds(formData);
       if (!result?.error) {
         formRef.current?.reset();
         setFormKey((k) => k + 1);
+        setFromWallet("dompet");
+        setToWallet("bank");
       }
       return result ?? null;
     },
@@ -32,27 +43,29 @@ export function TransferForm() {
     >
       <div className="flex flex-col gap-2">
         <Label htmlFor="from_wallet">Dari</Label>
-        <select
-          id="from_wallet"
-          name="from_wallet"
-          defaultValue="dompet"
-          className="h-9 rounded-md border bg-transparent px-3 text-sm"
-        >
-          <option value="dompet">Dompet</option>
-          <option value="bank">Bank</option>
-        </select>
+        <input type="hidden" name="from_wallet" value={fromWallet} />
+        <Select value={fromWallet} onValueChange={(v) => v && setFromWallet(v)}>
+          <SelectTrigger id="from_wallet" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="dompet">Dompet</SelectItem>
+            <SelectItem value="bank">Bank</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="to_wallet">Ke</Label>
-        <select
-          id="to_wallet"
-          name="to_wallet"
-          defaultValue="bank"
-          className="h-9 rounded-md border bg-transparent px-3 text-sm"
-        >
-          <option value="dompet">Dompet</option>
-          <option value="bank">Bank</option>
-        </select>
+        <input type="hidden" name="to_wallet" value={toWallet} />
+        <Select value={toWallet} onValueChange={(v) => v && setToWallet(v)}>
+          <SelectTrigger id="to_wallet" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="dompet">Dompet</SelectItem>
+            <SelectItem value="bank">Bank</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="transfer_amount">Nominal (Rp)</Label>
@@ -68,7 +81,7 @@ export function TransferForm() {
           required
         />
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="col-span-full flex flex-col gap-2 sm:col-span-2 lg:col-span-1">
         <Label htmlFor="transfer_note">Catatan (opsional)</Label>
         <Input id="transfer_note" name="note" />
       </div>

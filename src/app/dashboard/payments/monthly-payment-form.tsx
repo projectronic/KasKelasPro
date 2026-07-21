@@ -6,6 +6,14 @@ import { computeMemberDues } from "@/lib/dues";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type ActionState = { error?: string } | null;
 
@@ -84,24 +92,26 @@ export function MonthlyPaymentForm({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="flex flex-col gap-2">
           <Label htmlFor="member_id">Anggota</Label>
-          <select
-            id="member_id"
-            name="member_id"
-            required
+          <input type="hidden" name="member_id" value={memberId} />
+          <Select
             value={memberId}
-            onChange={(e) => {
-              setMemberId(e.target.value);
+            onValueChange={(value) => {
+              if (!value) return;
+              setMemberId(value);
               setChecked(new Set());
             }}
-            className="h-9 rounded-md border bg-transparent px-3 text-sm"
           >
-            <option value="">Pilih anggota</option>
-            {members.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.full_name}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="member_id" className="w-full">
+              <SelectValue placeholder="Pilih anggota" />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.full_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="paid_at">Tanggal Bayar</Label>
@@ -123,26 +133,29 @@ export function MonthlyPaymentForm({
         <div className="flex flex-col gap-2">
           <Label>Bulan yang Dibayar</Label>
           {unpaidPeriods.length ? (
-            <div className="flex flex-col gap-1 rounded-md border p-3">
+            <div className="flex flex-col divide-y rounded-md border">
               {unpaidPeriods.map((p) => (
                 <label
                   key={p.period}
-                  className="flex items-center justify-between gap-2 py-1 text-sm"
+                  className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm"
                 >
-                  <span className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
+                  <span className="flex items-center gap-2.5">
+                    <Checkbox
                       checked={checked.has(p.period)}
-                      onChange={() => toggle(p.period)}
+                      onCheckedChange={() => toggle(p.period)}
                     />
-                    {p.period}
-                    {p.paid > 0 && (
-                      <span className="text-xs text-muted-foreground">
-                        (sudah bayar sebagian: Rp {p.paid.toLocaleString("id-ID")})
-                      </span>
-                    )}
+                    <span>
+                      {p.period}
+                      {p.paid > 0 && (
+                        <span className="ml-1.5 text-xs text-muted-foreground">
+                          (sudah bayar sebagian: Rp {p.paid.toLocaleString("id-ID")})
+                        </span>
+                      )}
+                    </span>
                   </span>
-                  <span>Rp {p.owed.toLocaleString("id-ID")}</span>
+                  <span className="shrink-0 font-medium">
+                    Rp {p.owed.toLocaleString("id-ID")}
+                  </span>
                 </label>
               ))}
             </div>

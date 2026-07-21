@@ -37,7 +37,14 @@ export default async function SettingsPage() {
     .order("period", { ascending: true });
 
   return (
-    <div className="flex max-w-2xl flex-col gap-6">
+    <div className="flex w-full max-w-2xl flex-col gap-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Pengaturan</h1>
+        <p className="text-sm text-muted-foreground">
+          Konfigurasi iuran kelas dan pengecualian nominal per periode.
+        </p>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Pengaturan Iuran</CardTitle>
@@ -69,7 +76,10 @@ export default async function SettingsPage() {
           <ul className="flex flex-col gap-2 text-sm">
             {overrides?.length ? (
               overrides.map((o) => (
-                <li key={o.id} className="flex justify-between border-b pb-2">
+                <li
+                  key={o.id}
+                  className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-b pb-2"
+                >
                   <span>
                     {o.period} {o.note && `— ${o.note}`}
                   </span>

@@ -1,9 +1,16 @@
-import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import {
   Card,
   CardContent,
@@ -34,6 +41,7 @@ export default async function DashboardLayout({
 
   const role = profile?.role ?? "viewer";
   const canManage = role === "admin" || role === "editor";
+  const isAdmin = role === "admin";
 
   if (!profile?.approved && !canManage) {
     return (
@@ -62,35 +70,29 @@ export default async function DashboardLayout({
     );
   }
 
+  const cookieStore = await cookies();
+  const sidebarState = cookieStore.get("sidebar_state")?.value;
+  const defaultOpen = sidebarState !== "false";
+
   return (
-    <div className="min-h-screen">
-      <header className="flex items-center justify-between border-b px-6 py-4">
-        <nav className="flex items-center gap-4 text-sm font-medium">
-          <Link href="/dashboard">Dashboard</Link>
-          <Link href="/dashboard/rekap">Rekap</Link>
-          <Link href="/dashboard/members">Anggota</Link>
-          {canManage && <Link href="/dashboard/payments">Pembayaran</Link>}
-          {canManage && <Link href="/dashboard/wallet">Dompet</Link>}
-          {role === "admin" && (
-            <Link href="/dashboard/settings">Pengaturan</Link>
-          )}
-          {canManage && <Link href="/dashboard/users">Pengguna</Link>}
-          {canManage && <Link href="/dashboard/riwayat">Riwayat</Link>}
-        </nav>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span>
-            {profile?.full_name ?? profile?.email} ·{" "}
-            {profile?.title ? profile.title : <span className="uppercase">{role}</span>}
-          </span>
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <DashboardSidebar
+        fullName={profile?.full_name ?? null}
+        email={profile?.email ?? null}
+        role={role}
+        title={profile?.title ?? null}
+        canManage={canManage}
+        isAdmin={isAdmin}
+      />
+      <SidebarInset>
+        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
+          <SidebarTrigger />
+          <Separator orientation="vertical" className="h-5" />
+          <div className="flex-1" />
           <ThemeToggle />
-          <form action={signOut}>
-            <Button type="submit" variant="outline" size="sm">
-              Keluar
-            </Button>
-          </form>
-        </div>
-      </header>
-      <main className="p-6">{children}</main>
-    </div>
+        </header>
+        <main className="flex-1 p-4 md:p-6">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

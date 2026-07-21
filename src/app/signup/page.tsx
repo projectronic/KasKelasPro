@@ -1,3 +1,4 @@
+import { Landmark } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { SignupForm } from "./signup-form";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -20,7 +21,10 @@ export default async function SignupPage() {
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="items-center text-center">
+          <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Landmark className="size-5" />
+          </div>
           <CardTitle>Daftar Akun {className}</CardTitle>
           <CardDescription>
             Siswa dan orang tua/wali bisa daftar dengan akun masing-masing.

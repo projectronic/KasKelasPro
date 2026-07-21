@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Landmark } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -97,7 +98,10 @@ export default function ResetPasswordPage() {
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-sm">
-        <CardHeader>
+        <CardHeader className="items-center text-center">
+          <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Landmark className="size-5" />
+          </div>
           <CardTitle>Buat Password Baru</CardTitle>
           <CardDescription>
             Berlaku hanya untuk sekali link reset yang baru saja kamu buka

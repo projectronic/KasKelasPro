@@ -1,8 +1,15 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useState } from "react";
 import { updateUserRole } from "./actions";
 import type { AppRole } from "@/lib/supabase/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type ActionState = { error?: string } | null;
 
@@ -15,30 +22,39 @@ export function RoleRowForm({
   role: AppRole;
   isSelf: boolean;
 }) {
-  const formRef = useRef<HTMLFormElement>(null);
+  const [value, setValue] = useState<AppRole>(role);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => (await updateUserRole(formData)) ?? null,
     null
   );
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-1">
-      <input type="hidden" name="profile_id" value={profileId} />
-      <select
-        name="role"
-        defaultValue={role}
+    <div className="flex flex-col gap-1">
+      <Select
+        value={value}
         disabled={isSelf || isPending}
-        onChange={() => formRef.current?.requestSubmit()}
-        className="h-8 w-fit rounded-md border bg-transparent px-2 text-sm disabled:opacity-50"
+        onValueChange={(next) => {
+          if (!next) return;
+          setValue(next as AppRole);
+          const formData = new FormData();
+          formData.set("profile_id", profileId);
+          formData.set("role", next);
+          formAction(formData);
+        }}
       >
-        <option value="viewer">Viewer</option>
-        <option value="editor">Editor</option>
-        <option value="admin">Admin</option>
-      </select>
+        <SelectTrigger size="sm" className="w-fit">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="viewer">Viewer</SelectItem>
+          <SelectItem value="editor">Editor</SelectItem>
+          <SelectItem value="admin">Admin</SelectItem>
+        </SelectContent>
+      </Select>
       {state?.error && <p className="text-xs text-destructive">{state.error}</p>}
       {isSelf && (
         <p className="text-xs text-muted-foreground">Akun kamu sendiri</p>
       )}
-    </form>
+    </div>
   );
 }
