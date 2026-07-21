@@ -31,6 +31,56 @@ export async function updateUserRole(formData: FormData) {
   revalidatePath("/dashboard/users");
 }
 
+export async function updateUserTitle(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: callerProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single();
+
+  if (callerProfile?.role !== "admin") {
+    return { error: "Hanya admin yang bisa mengubah jabatan." };
+  }
+
+  const profileId = formData.get("profile_id") as string;
+  const title = (formData.get("title") as string) || null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ title })
+    .eq("id", profileId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/users");
+  revalidatePath("/dashboard");
+}
+
+export async function approveRegistration(formData: FormData) {
+  const supabase = await createClient();
+
+  const profileId = formData.get("profile_id") as string;
+
+  const { error } = await supabase.rpc("approve_registration", {
+    p_profile_id: profileId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/users");
+  revalidatePath("/dashboard/members");
+}
+
 export async function sendPasswordReset(formData: FormData) {
   const supabase = await createClient();
 

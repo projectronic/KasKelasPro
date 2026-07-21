@@ -21,6 +21,7 @@ type SettingsRow = {
   class_name: string;
   iuran_type: IuranType;
   iuran_amount: number;
+  period_start_date: string;
   updated_at: string;
 };
 
@@ -36,6 +37,7 @@ type MemberRow = {
   id: string;
   full_name: string;
   email: string | null;
+  phone: string | null;
   parent_name: string | null;
   parent_email: string | null;
   parent_phone: string | null;
@@ -49,7 +51,9 @@ type ProfileRow = {
   email: string;
   full_name: string | null;
   role: AppRole;
+  title: string | null;
   member_id: string | null;
+  approved: boolean;
   created_at: string;
 };
 
@@ -78,6 +82,13 @@ type WalletTransactionRow = {
 type WalletBalanceRow = {
   wallet: WalletName;
   balance: number;
+};
+
+type ActivityLogRow = {
+  id: string;
+  actor_id: string | null;
+  action: string;
+  created_at: string;
 };
 
 export type Database = {
@@ -119,8 +130,15 @@ export type Database = {
       wallet_transactions: {
         Row: WalletTransactionRow;
         Insert: Omit<WalletTransactionRow, "id" | "created_at"> &
-          Partial<Pick<WalletTransactionRow, "id">>;
+          Partial<Pick<WalletTransactionRow, "id" | "created_at">>;
         Update: Partial<WalletTransactionRow>;
+        Relationships: [];
+      };
+      activity_log: {
+        Row: ActivityLogRow;
+        Insert: Omit<ActivityLogRow, "id" | "created_at"> &
+          Partial<Pick<ActivityLogRow, "id" | "created_at">>;
+        Update: Partial<ActivityLogRow>;
         Relationships: [];
       };
     };
@@ -137,6 +155,7 @@ export type Database = {
           p_period: string;
           p_amount: number;
           p_note?: string | null;
+          p_paid_at?: string;
         };
         Returns: PaymentRow;
       };
@@ -145,6 +164,7 @@ export type Database = {
           p_wallet: WalletName;
           p_amount: number;
           p_reason: string;
+          p_created_at?: string;
         };
         Returns: WalletTransactionRow;
       };
@@ -154,6 +174,13 @@ export type Database = {
           p_to_wallet: WalletName;
           p_amount: number;
           p_note?: string | null;
+          p_created_at?: string;
+        };
+        Returns: undefined;
+      };
+      approve_registration: {
+        Args: {
+          p_profile_id: string;
         };
         Returns: undefined;
       };

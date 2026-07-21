@@ -1,19 +1,27 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState } from "react";
 import { addDuesOverride } from "./actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/currency-input";
 
 type ActionState = { error?: string } | null;
 
 export function DuesOverrideForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  // CurrencyInput tracks its own typed-in state, which a native
+  // form.reset() can't touch — bump this key after a successful submit to
+  // force it to remount blank instead of showing the just-submitted amount.
+  const [formKey, setFormKey] = useState(0);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
       const result = await addDuesOverride(formData);
-      if (!result?.error) formRef.current?.reset();
+      if (!result?.error) {
+        formRef.current?.reset();
+        setFormKey((k) => k + 1);
+      }
       return result ?? null;
     },
     null
@@ -31,11 +39,10 @@ export function DuesOverrideForm() {
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="override_amount">Nominal (Rp)</Label>
-        <Input
+        <CurrencyInput
+          key={formKey}
           id="override_amount"
           name="override_amount"
-          type="number"
-          min={0}
           required
         />
       </div>

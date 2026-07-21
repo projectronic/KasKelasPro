@@ -5,6 +5,7 @@ import { updateSettings } from "./actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/currency-input";
 import type { IuranType } from "@/lib/supabase/types";
 
 type ActionState = { error?: string } | null;
@@ -13,10 +14,12 @@ export function SettingsForm({
   className,
   iuranType,
   iuranAmount,
+  periodStartDate,
 }: {
   className: string;
   iuranType: IuranType;
   iuranAmount: number;
+  periodStartDate: string;
 }) {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => (await updateSettings(formData)) ?? null,
@@ -48,14 +51,26 @@ export function SettingsForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="iuran_amount">Nominal Iuran Default (Rp)</Label>
-        <Input
+        <CurrencyInput
           id="iuran_amount"
           name="iuran_amount"
-          type="number"
-          min={0}
           defaultValue={iuranAmount}
           required
         />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="period_start_date">Kas Mulai Dihitung Sejak</Label>
+        <Input
+          id="period_start_date"
+          name="period_start_date"
+          type="date"
+          defaultValue={periodStartDate}
+          required
+        />
+        <p className="text-xs text-muted-foreground">
+          Biasanya awal tahun ajaran. Anggota yang gabung belakangan tetap
+          dihitung dari tanggal gabungnya sendiri, bukan dari sini.
+        </p>
       </div>
       {state?.error && (
         <p className="text-sm text-destructive">{state.error}</p>

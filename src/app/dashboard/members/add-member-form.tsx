@@ -34,6 +34,10 @@ export function AddMemberForm() {
         <Input id="email" name="email" type="email" />
       </div>
       <div className="flex flex-col gap-2">
+        <Label htmlFor="phone">Telepon Siswa (opsional)</Label>
+        <Input id="phone" name="phone" />
+      </div>
+      <div className="flex flex-col gap-2">
         <Label htmlFor="parent_name">Nama Orang Tua/Wali</Label>
         <Input id="parent_name" name="parent_name" />
       </div>

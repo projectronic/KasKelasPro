@@ -1,19 +1,24 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useRef, useState } from "react";
 import { transferFunds } from "./actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/currency-input";
 
 type ActionState = { error?: string } | null;
 
 export function TransferForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const [formKey, setFormKey] = useState(0);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
       const result = await transferFunds(formData);
-      if (!result?.error) formRef.current?.reset();
+      if (!result?.error) {
+        formRef.current?.reset();
+        setFormKey((k) => k + 1);
+      }
       return result ?? null;
     },
     null
@@ -51,7 +56,17 @@ export function TransferForm() {
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="transfer_amount">Nominal (Rp)</Label>
-        <Input id="transfer_amount" name="amount" type="number" min={0} required />
+        <CurrencyInput key={formKey} id="transfer_amount" name="amount" required />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="transfer_date">Tanggal</Label>
+        <Input
+          id="transfer_date"
+          name="created_at"
+          type="date"
+          defaultValue={new Date().toISOString().slice(0, 10)}
+          required
+        />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="transfer_note">Catatan (opsional)</Label>

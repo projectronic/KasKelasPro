@@ -1,4 +1,4 @@
-# 💰 KasKelasPro
+# 💰 Kas Kelas Pro
 
 **Dashboard kas kelas open-source berbasis Next.js, Supabase, dan Vercel** — untuk bendahara kelas yang ingin mengelola iuran (harian maupun bulanan), memantau tunggakan, dan berbagi akses ke siswa/orang tua secara aman, tanpa spreadsheet manual.
 
@@ -14,13 +14,17 @@
 
 ## 📖 Daftar Isi
 
-- [💰 KasKelasPro](#-kaskelaspro)
+- [💰 Kas Kelas Pro](#-kas-kelas-pro)
   - [📖 Daftar Isi](#-daftar-isi)
-  - [🎯 Kenapa KasKelasPro?](#-kenapa-kaskelaspro)
+  - [🎯 Kenapa Kas Kelas Pro?](#-kenapa-kas-kelas-pro)
   - [✨ Fitur](#-fitur)
   - [🧩 Tech Stack](#-tech-stack)
   - [🔐 Role \& Hak Akses](#-role--hak-akses)
   - [🚀 Mulai Cepat (Deploy Sendiri)](#-mulai-cepat-deploy-sendiri)
+    - [1. Setup Supabase](#1-setup-supabase)
+    - [2. Deploy ke Vercel](#2-deploy-ke-vercel)
+    - [3. Sambungkan balik ke Supabase](#3-sambungkan-balik-ke-supabase)
+    - [4. Pemakaian pertama](#4-pemakaian-pertama)
   - [🔑 Environment Variables](#-environment-variables)
   - [🛡️ Privasi \& Tanggung Jawab](#️-privasi--tanggung-jawab)
   - [🗺️ Roadmap](#️-roadmap)
@@ -30,7 +34,7 @@
 
 ---
 
-## 🎯 Kenapa KasKelasPro?
+## 🎯 Kenapa Kas Kelas Pro?
 
 Bendahara kelas biasanya mencatat kas di buku, grup chat, atau spreadsheet — gampang hilang, sulit diaudit, dan rawan salah hitung. **KasKelasPro** dibuat supaya satu kelas bisa punya "sistem keuangan mini" sendiri:
 
@@ -43,14 +47,21 @@ Bendahara kelas biasanya mencatat kas di buku, grup chat, atau spreadsheet — g
 | Fitur | Keterangan |
 |---|---|
 | 🗓️ **Mode iuran fleksibel** | Pilih saat setup: **iuran harian** (misal Rp1.000/hari sekolah) atau **iuran bulanan** (nominal tetap per bulan) |
-| ⚙️ **Pengaturan besar iuran** | Nominal iuran diatur lewat halaman Settings, tidak hardcode di kode. Bisa juga atur **pengecualian nominal per bulan/periode tertentu** (mis. bulan pertama beda karena ada biaya pendaftaran) |
-| 👥 **Manajemen anggota** | CRUD data siswa, termasuk **nama, email, dan telepon orang tua/wali** |
-| 🔐 **Role management** | `admin`, `editor` (bendahara/pengurus — bisa input transaksi & kelola data), `viewer` (siswa/orang tua terdaftar — lihat saldo & rekap saja) |
+| ⚙️ **Pengaturan besar iuran** | Nominal iuran diatur lewat halaman Settings, tidak hardcode di kode. Bisa juga atur **pengecualian nominal per bulan/periode tertentu** (mis. bulan pertama beda karena ada biaya pendaftaran) dan **tanggal mulai kas** (biasanya awal tahun ajaran) — tunggakan dihitung dari situ, atau dari tanggal gabung anggota kalau lebih belakangan |
+| ✅ **Catat pembayaran multi-bulan** | Mode bulanan: pilih anggota, sistem otomatis tampilkan checklist bulan yang belum lunas dengan nominalnya — tinggal centang yang mau dibayar sekaligus |
+| 👥 **Manajemen anggota** | Tambah/edit data siswa, termasuk **nama, email, telepon siswa, dan nama/email/telepon orang tua/wali**. Nomor telepon jadi link WhatsApp — klik langsung buka `wa.me` |
+| 🏷️ **Nama kelas dinamis** | Judul tab browser dan halaman login/daftar otomatis pakai **Nama Kelas** dari Pengaturan, bukan hardcode "KasKelasPro" |
+| 💯 **Format ribuan otomatis** | Semua input nominal (iuran, pengecualian, pembayaran, penarikan, transfer) tampil dengan pemisah ribuan (mis. `10.000`) selagi diketik |
+| 📝 **Pendaftaran terbuka + approval** | Siapa saja bisa daftar sendiri sebagai **siswa** atau **orang tua/wali** (akun & password terpisah), tapi menunggu **approval admin/editor** sebelum bisa mengakses data kelas — bukan whitelist tertutup |
+| 👨‍👩‍👧 **Siswa & orang tua akun terpisah** | Dicocokkan otomatis ke anggota yang sama lewat nama siswa, supaya tidak dihitung dobel di jumlah anggota/tunggakan; admin bisa membetulkan lewat **Edit Anggota** kalau salah sambung |
+| 🔐 **Role management** | `admin`, `editor` (bendahara/pengurus — bisa input transaksi & kelola data serta approve pendaftaran), `viewer` (siswa/orang tua yang sudah di-approve — lihat saldo & rekap saja) |
+| 🏷️ **Jabatan custom** | Admin bisa kasih label bebas ("Ketua", "Bendahara", "Sekretaris", dst) ke akun admin/editor — tampil di header dan halaman Pengguna. **Catatan:** ini label tampilan saja, hak aksesnya tetap dari role di atas (lihat [Role & Hak Akses](#-role--hak-akses) untuk kenapa) |
 | 💵 **Dompet & Bank** | Pisah saldo kas tunai dan saldo bank, dengan mutasi antar-dompet |
 | 📊 **Rekap & tunggakan otomatis** | Hitung tunggakan berdasarkan mode iuran yang aktif |
 | 🧾 **Riwayat penarikan** | Catat penggunaan dana lengkap dengan alasan, sebagai bukti pertanggungjawaban |
 | 🔑 **Reset password mandiri** | Anggota bisa reset password sendiri lewat email (halaman Lupa Password), admin juga bisa memicu reset untuk akun tertentu |
 | 🌗 **Dark/light mode** | Toggle tema (Terang/Gelap/Sistem) di pojok kanan atas setiap halaman, tersimpan sesuai preferensi browser |
+| 🕒 **Riwayat aktivitas** | Log siapa melakukan apa dan kapan (pembayaran, penarikan/transfer dana, approval pendaftaran) — halaman Riwayat, admin/editor saja |
 
 ## 🧩 Tech Stack
 
@@ -60,25 +71,33 @@ Bendahara kelas biasanya mencatat kas di buku, grup chat, atau spreadsheet — g
 
 ## 🔐 Role & Hak Akses
 
-| Aksi | Admin | Editor | Viewer |
+| Aksi | Admin | Editor | Viewer (approved) |
 |---|:---:|:---:|:---:|
 | Melihat dashboard, saldo, rekap | ✅ | ✅ | ✅ |
+| Melihat daftar Anggota | ✅ (lengkap) | ✅ (lengkap) | ✅ (nama & status saja — kontak orang tua siswa lain disembunyikan) |
 | Input transaksi kas / iuran | ✅ | ✅ | ❌ |
 | Tambah/edit data anggota | ✅ | ✅ | ❌ |
+| **Approve pendaftaran baru** | ✅ | ✅ | ❌ |
 | Ubah pengaturan (nominal iuran, mode harian/bulanan) | ✅ | ❌ | ❌ |
 | Kelola role pengguna lain | ✅ | ❌ | ❌ |
 | Reset password pengguna lain | ✅ | ❌ | ❌ |
 
+Akun yang baru daftar berstatus **pending** — tidak bisa mengakses data apa pun (hanya lihat layar "menunggu persetujuan") sampai di-approve oleh admin/editor lewat halaman **Pengguna**.
+
 Semua orang (termasuk yang belum login) bisa reset password mereka sendiri lewat halaman **Lupa Password** di `/login`.
 
-Viewer diaktifkan otomatis untuk siapa pun yang mendaftar dengan **email yang sudah terdaftar** sebagai siswa/orang tua di data anggota — tanpa perlu diundang manual satu per satu.
+### Kenapa cuma 3 role, bukan role bebas buat admin?
+
+Role di atas (`admin`/`editor`/`viewer`) itu tetap — bukan sesuatu yang admin bisa tambah/kurangi sendiri lewat UI. Yang bisa dikustomisasi cuma **label tampilan** (field "Jabatan" di halaman Pengguna, mis. "Ketua", "Bendahara", "Sekretaris") yang ditempel ke akun `admin`/`editor`, tanpa mengubah hak aksesnya sama sekali.
+
+Alasannya: hak akses ditegakkan lewat RLS (Row Level Security) di database, bukan di kode aplikasi — jadi role "penuh dinamis" (admin bikin role baru + pilih sendiri izin apa saja per role) butuh desain ulang seluruh policy RLS di `supabase/schema.sql` dari yang sekarang cek `role = 'admin'/'editor'` jadi cek tabel permission terpisah. Itu perubahan besar dan berisiko (salah desain = celah keamanan data keuangan), jadi sengaja belum dikerjakan tanpa dibahas dulu. Kalau memang dibutuhkan, kabari saja.
 
 ## 🚀 Mulai Cepat (Deploy Sendiri)
 
 ### 1. Setup Supabase
 
 1. Buat akun/project baru di [supabase.com](https://supabase.com) (gratis).
-2. Buka **SQL Editor** di dashboard project → tempel seluruh isi [`supabase/schema.sql`](./supabase/schema.sql) → **Run**. Ini akan membuat semua tabel, RLS policy, trigger whitelist-signup, dan fungsi ledger sekaligus.
+2. Buka **SQL Editor** di dashboard project → tempel seluruh isi [`supabase/schema.sql`](./supabase/schema.sql) → **Run**. Ini akan membuat semua tabel, RLS policy, trigger pendaftaran, dan fungsi ledger sekaligus.
 3. Buka **Project Settings → API**, catat **Project URL** dan **anon/public key** (di dashboard Supabase yang lebih baru namanya **Publishable key**, format `sb_publishable_...` — fungsinya sama persis, tinggal pakai) — dipakai di langkah 3 bagian deploy.
 
    ![Lokasi Project URL dan Publishable key di dashboard Supabase](./docs/images/supabase-setup.png)
@@ -102,9 +121,9 @@ Viewer diaktifkan otomatis untuk siapa pun yang mendaftar dengan **email yang su
 
 ### 4. Pemakaian pertama
 
-1. Buka domain Vercel kamu → **/signup** → daftar akun pertama. Akun pertama ini **otomatis jadi admin**.
+1. Buka domain Vercel kamu → **/signup** → daftar akun pertama. Akun pertama ini **otomatis jadi admin & langsung approved**.
 2. Login sebagai admin → **Pengaturan**: atur nama kelas, mode iuran (harian/bulanan), dan nominal default.
-3. **Anggota**: input data siswa beserta email siswa/orang tua — email ini yang jadi whitelist supaya mereka bisa daftar sebagai viewer.
+3. Sebarkan link `/signup` ke siswa/orang tua. Setiap pendaftar baru berstatus **pending** sampai kamu approve lewat halaman **Pengguna**. (Atau tambahkan anggota manual lewat **Anggota** kalau tidak semua orang akan bikin akun sendiri.)
 4. **Pengguna**: kalau perlu, promosikan salah satu akun jadi `editor` (mis. bendahara kedua) lewat halaman ini.
 
 ## 🔑 Environment Variables
@@ -131,7 +150,7 @@ KasKelasPro menyimpan **data pribadi** (nama, email, nomor telepon siswa maupun 
 
 - [x] Scaffold project Next.js + shadcn/ui + koneksi Supabase
 - [x] Skema database (anggota, settings, dues_overrides, payments, wallet_transactions, roles) + RLS policy — lihat [`supabase/schema.sql`](./supabase/schema.sql)
-- [x] Autentikasi & pendaftaran viewer berbasis whitelist email
+- [x] Autentikasi + pendaftaran terbuka dengan approval admin/editor (bukan whitelist)
 - [x] Toggle mode iuran harian/bulanan + pengecualian per periode di Settings
 - [x] Halaman input pembayaran iuran & riwayat penarikan/transfer dompet↔bank
 - [x] Rekap tunggakan otomatis per anggota, diurutkan dari penunggak terbanyak
@@ -139,6 +158,13 @@ KasKelasPro menyimpan **data pribadi** (nama, email, nomor telepon siswa maupun 
 - [x] Halaman kelola role pengguna (ubah viewer/editor/admin dari UI)
 - [x] Reset password mandiri (self-service) + reset oleh admin
 - [x] Dark/light mode toggle
+- [x] Pendaftaran terpisah siswa/orang tua (akun & password sendiri-sendiri), dicocokkan otomatis ke anggota yang sama by nama
+- [x] Halaman edit Anggota (betulkan data / salah sambung siswa↔orang tua)
+- [x] Tanggal mulai kas di Settings + checklist pembayaran multi-bulan (mode bulanan) + input tanggal di pembayaran/penarikan/transfer
+- [x] Halaman Riwayat aktivitas (audit log pembayaran, mutasi dana, approval)
+- [x] Nama kelas dinamis di tab & halaman login/daftar, format ribuan di semua input nominal, telepon jadi link WhatsApp, jabatan custom (label saja) untuk admin/editor
+- [ ] Checklist pembayaran multi-periode untuk mode harian (baru tersedia untuk bulanan)
+- [ ] Role & permission yang benar-benar dinamis (admin bikin role + pilih izinnya sendiri) — lihat penjelasan di [Role & Hak Akses](#-role--hak-akses)
 - [ ] Sidebar navigasi (collapsible) — saat ini navigasi masih top nav bar sederhana, belum ada sidebar
 
 ## 🤝 Kontribusi
@@ -154,8 +180,9 @@ Terinspirasi dari [**KasKelas**](https://github.com/xDzaky/KasKelas) oleh [@xDza
 [GNU AGPL v3](./LICENSE) — bebas digunakan, dimodifikasi, dan didistribusikan ulang. Bedanya dengan lisensi permisif (MIT/Apache): kalau kamu menjalankan versi modifikasi sebagai layanan (mis. di-hosting untuk pihak lain, termasuk secara komersial), kamu **wajib merilis source code versi modifikasi tersebut** ke pengguna layanan itu juga — celah "ambil kode open-source, modifikasi, jual sebagai SaaS tertutup" yang biasanya lolos di lisensi permisif, ditutup oleh AGPL.
 
 ---
-
+ 
+ 
 <p align="center">
-  Traktir saya kopi di:<br />
+  Kalau project ini berguna, doakan saya ya. tapi kalau mau traktir saya kopi, boleh juga di:<br />
   <a href="https://trakteer.id/vicky_andhika" target="_blank"><img id="wse-buttons-preview" src="https://edge-cdn.trakteer.id/images/embed/trbtn-red-1.png?v=14-05-2025" height="40" style="border:0px;height:40px;" alt="Trakteer Saya"></a>
 </p>

@@ -2,21 +2,65 @@
 
 import { useActionState, useMemo, useRef, useState } from "react";
 import { recordPayment } from "./actions";
+import { MonthlyPaymentForm } from "./monthly-payment-form";
 import { currentPeriod, getRateForPeriod } from "@/lib/dues";
 import type { IuranType } from "@/lib/supabase/types";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/currency-input";
 
 type ActionState = { error?: string } | null;
+type Member = { id: string; full_name: string; join_date: string };
 
 export function PaymentForm({
   members,
   iuranType,
   defaultAmount,
+  periodStartDate,
+  overrides,
+  allPayments,
+}: {
+  members: Member[];
+  iuranType: IuranType;
+  defaultAmount: number;
+  periodStartDate: string;
+  overrides: { period: string; amount: number }[];
+  allPayments: { member_id: string; period: string; amount: number }[];
+}) {
+  // Monthly dues can span several unpaid months at once, so it gets a
+  // checkbox picker instead of typing one period at a time. Daily mode
+  // (one row per school day) doesn't have that "catch up" pattern in the
+  // same way yet, so it keeps the plain single-period form below.
+  if (iuranType === "bulanan") {
+    return (
+      <MonthlyPaymentForm
+        members={members}
+        defaultAmount={defaultAmount}
+        periodStartDate={periodStartDate}
+        overrides={overrides}
+        allPayments={allPayments}
+      />
+    );
+  }
+
+  return (
+    <DailyPaymentForm
+      members={members}
+      iuranType={iuranType}
+      defaultAmount={defaultAmount}
+      overrides={overrides}
+    />
+  );
+}
+
+function DailyPaymentForm({
+  members,
+  iuranType,
+  defaultAmount,
   overrides,
 }: {
-  members: { id: string; full_name: string }[];
+  members: Member[];
   iuranType: IuranType;
   defaultAmount: number;
   overrides: { period: string; amount: number }[];
@@ -70,9 +114,7 @@ export function PaymentForm({
         </select>
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="period">
-          Periode ({iuranType === "bulanan" ? "YYYY-MM" : "YYYY-MM-DD"})
-        </Label>
+        <Label htmlFor="period">Periode (YYYY-MM-DD)</Label>
         <Input
           id="period"
           name="period"
@@ -86,19 +128,27 @@ export function PaymentForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="amount">Nominal (Rp)</Label>
-        <Input
+        <CurrencyInput
           id="amount"
           name="amount"
-          type="number"
-          min={0}
           value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
+          onValueChange={setAmount}
           required
         />
       </div>
       <div className="flex flex-col gap-2">
+        <Label htmlFor="paid_at">Tanggal Bayar</Label>
+        <Input
+          id="paid_at"
+          name="paid_at"
+          type="date"
+          defaultValue={today.toISOString().slice(0, 10)}
+          required
+        />
+      </div>
+      <div className="col-span-full flex flex-col gap-2 sm:col-span-1">
         <Label htmlFor="note">Catatan (opsional)</Label>
-        <Input id="note" name="note" placeholder="mis. bayar 2 bulan sekaligus" />
+        <Input id="note" name="note" placeholder="mis. bayar 2 hari sekaligus" />
       </div>
       <div className="col-span-full flex flex-col gap-2">
         {state?.error && (

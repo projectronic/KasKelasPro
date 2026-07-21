@@ -28,7 +28,7 @@ export default async function SettingsPage() {
 
   const { data: settings } = await supabase
     .from("settings")
-    .select("class_name, iuran_type, iuran_amount")
+    .select("class_name, iuran_type, iuran_amount, period_start_date")
     .single();
 
   const { data: overrides } = await supabase
@@ -51,6 +51,7 @@ export default async function SettingsPage() {
             className={settings?.class_name ?? ""}
             iuranType={settings?.iuran_type ?? "bulanan"}
             iuranAmount={settings?.iuran_amount ?? 0}
+            periodStartDate={settings?.period_start_date ?? new Date().toISOString().slice(0, 10)}
           />
         </CardContent>
       </Card>

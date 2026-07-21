@@ -13,6 +13,7 @@ export async function updateSettings(formData: FormData) {
       class_name: formData.get("class_name") as string,
       iuran_type: formData.get("iuran_type") as IuranType,
       iuran_amount: Number(formData.get("iuran_amount")),
+      period_start_date: formData.get("period_start_date") as string,
     })
     .eq("id", true);
 
@@ -22,6 +23,8 @@ export async function updateSettings(formData: FormData) {
 
   revalidatePath("/dashboard/settings");
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/rekap");
+  revalidatePath("/dashboard/payments");
 }
 
 export async function addDuesOverride(formData: FormData) {

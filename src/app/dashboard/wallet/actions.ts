@@ -11,6 +11,7 @@ export async function transferFunds(formData: FormData) {
   const toWallet = formData.get("to_wallet") as WalletName;
   const amount = Number(formData.get("amount"));
   const note = (formData.get("note") as string) || null;
+  const createdAt = formData.get("created_at") as string;
 
   if (!amount || fromWallet === toWallet) {
     return { error: "Nominal wajib diisi dan dompet asal/tujuan harus beda." };
@@ -21,6 +22,7 @@ export async function transferFunds(formData: FormData) {
     p_to_wallet: toWallet,
     p_amount: amount,
     p_note: note,
+    p_created_at: createdAt ? new Date(createdAt).toISOString() : undefined,
   });
 
   if (error) return { error: error.message };
@@ -35,6 +37,7 @@ export async function withdrawFunds(formData: FormData) {
   const wallet = formData.get("wallet") as WalletName;
   const amount = Number(formData.get("amount"));
   const reason = formData.get("reason") as string;
+  const createdAt = formData.get("created_at") as string;
 
   if (!amount || !reason) {
     return { error: "Nominal dan alasan penarikan wajib diisi." };
@@ -44,6 +47,7 @@ export async function withdrawFunds(formData: FormData) {
     p_wallet: wallet,
     p_amount: amount,
     p_reason: reason,
+    p_created_at: createdAt ? new Date(createdAt).toISOString() : undefined,
   });
 
   if (error) return { error: error.message };

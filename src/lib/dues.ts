@@ -51,6 +51,15 @@ export function getExpectedPeriods(
   return periods;
 }
 
+/**
+ * Kas biasanya berlaku satu tahun ajaran, dihitung dari settings.period_start_date
+ * — tapi anggota yang baru gabung di tengah jalan tidak dianggap nunggak
+ * sejak awal tahun, jadi dipakai yang lebih belakangan.
+ */
+export function effectiveStartDate(periodStartDate: Date, joinDate: Date): Date {
+  return joinDate > periodStartDate ? joinDate : periodStartDate;
+}
+
 export function getRateForPeriod(
   period: string,
   defaultAmount: number,
@@ -74,6 +83,7 @@ export type MemberDues = {
 
 export function computeMemberDues({
   iuranType,
+  periodStartDate,
   joinDate,
   today,
   defaultAmount,
@@ -81,13 +91,15 @@ export function computeMemberDues({
   payments,
 }: {
   iuranType: IuranType;
+  periodStartDate: Date;
   joinDate: Date;
   today: Date;
   defaultAmount: number;
   overrides: Map<string, number>;
   payments: { period: string; amount: number }[];
 }): MemberDues {
-  const expected = getExpectedPeriods(iuranType, joinDate, today);
+  const start = effectiveStartDate(periodStartDate, joinDate);
+  const expected = getExpectedPeriods(iuranType, start, today);
 
   const paidByPeriod = new Map<string, number>();
   for (const p of payments) {

@@ -38,12 +38,18 @@ export default async function PaymentsPage() {
     { data: allMembers },
     { data: settings },
     { data: overrides },
-    { data: payments },
+    { data: allPayments },
+    { data: recentPayments },
   ] = await Promise.all([
-    supabase.from("members").select("id, full_name").eq("active", true).order("full_name"),
+    supabase
+      .from("members")
+      .select("id, full_name, join_date")
+      .eq("active", true)
+      .order("full_name"),
     supabase.from("members").select("id, full_name"),
-    supabase.from("settings").select("iuran_type, iuran_amount").single(),
+    supabase.from("settings").select("iuran_type, iuran_amount, period_start_date").single(),
     supabase.from("dues_overrides").select("period, amount"),
+    supabase.from("payments").select("member_id, period, amount"),
     supabase
       .from("payments")
       .select("id, member_id, period, amount, paid_at, note")
@@ -68,7 +74,9 @@ export default async function PaymentsPage() {
             members={activeMembers ?? []}
             iuranType={settings?.iuran_type ?? "bulanan"}
             defaultAmount={settings?.iuran_amount ?? 0}
+            periodStartDate={settings?.period_start_date ?? new Date().toISOString().slice(0, 10)}
             overrides={overrides ?? []}
+            allPayments={allPayments ?? []}
           />
         </CardContent>
       </Card>
@@ -89,7 +97,7 @@ export default async function PaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments?.map((p) => (
+              {recentPayments?.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell>{memberNames.get(p.member_id) ?? "-"}</TableCell>
                   <TableCell>{p.period}</TableCell>

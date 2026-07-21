@@ -15,8 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { RoleRowForm } from "./role-row-form";
 import { ResetPasswordButton } from "./reset-password-button";
+import { ApproveButton } from "./approve-button";
+import { TitleRowForm } from "./title-row-form";
 
 export default async function UsersPage() {
   const supabase = await createClient();
@@ -30,14 +33,17 @@ export default async function UsersPage() {
     .eq("id", user!.id)
     .single();
 
-  if (profile?.role !== "admin") {
+  const isAdmin = profile?.role === "admin";
+  const isEditor = profile?.role === "editor";
+
+  if (!isAdmin && !isEditor) {
     redirect("/dashboard");
   }
 
   const [{ data: profiles }, { data: members }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, email, full_name, role, member_id, created_at")
+      .select("id, email, full_name, role, title, member_id, approved, created_at")
       .order("created_at", { ascending: true }),
     supabase.from("members").select("id, full_name"),
   ]);
@@ -50,8 +56,8 @@ export default async function UsersPage() {
         <CardHeader>
           <CardTitle>Kelola Pengguna</CardTitle>
           <CardDescription>
-            Ubah role langsung dari dropdown — tersimpan otomatis. Hanya
-            admin yang bisa mengakses halaman ini.
+            Pendaftar baru perlu di-approve (admin & editor bisa approve)
+            sebelum bisa mengakses data kelas. Ubah role hanya bisa admin.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -62,7 +68,9 @@ export default async function UsersPage() {
                 <TableHead>Email</TableHead>
                 <TableHead>Terhubung Anggota</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Password</TableHead>
+                <TableHead>Jabatan</TableHead>
+                <TableHead>Status</TableHead>
+                {isAdmin && <TableHead>Password</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -74,20 +82,43 @@ export default async function UsersPage() {
                     {p.member_id ? memberNames.get(p.member_id) ?? "-" : "-"}
                   </TableCell>
                   <TableCell>
-                    <RoleRowForm
-                      profileId={p.id}
-                      role={p.role}
-                      isSelf={p.id === user!.id}
-                    />
+                    {isAdmin ? (
+                      <RoleRowForm
+                        profileId={p.id}
+                        role={p.role}
+                        isSelf={p.id === user!.id}
+                      />
+                    ) : (
+                      <span className="uppercase">{p.role}</span>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <ResetPasswordButton email={p.email} />
+                    {isAdmin ? (
+                      <TitleRowForm profileId={p.id} title={p.title} />
+                    ) : (
+                      p.title ?? "-"
+                    )}
                   </TableCell>
+                  <TableCell>
+                    {p.approved ? (
+                      <Badge>Approved</Badge>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        <Badge variant="secondary">Pending</Badge>
+                        <ApproveButton profileId={p.id} />
+                      </div>
+                    )}
+                  </TableCell>
+                  {isAdmin && (
+                    <TableCell>
+                      <ResetPasswordButton email={p.email} />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               {!profiles?.length && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={isAdmin ? 7 : 6} className="text-center text-muted-foreground">
                     Belum ada pengguna terdaftar.
                   </TableCell>
                 </TableRow>

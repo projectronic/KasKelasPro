@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -11,14 +12,19 @@ function formatRupiah(amount: number) {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const [{ data: settings }, { data: members }, { data: wallets }] =
+  const [{ data: settings }, { data: members }, { data: wallets }, { data: profile }] =
     await Promise.all([
       supabase.from("settings").select("class_name, iuran_type, iuran_amount").single(),
       supabase.from("members").select("id, active"),
       supabase.from("wallet_balances").select("wallet, balance"),
+      supabase.from("profiles").select("role").eq("id", user!.id).single(),
     ]);
 
+  const canManage = profile?.role === "admin" || profile?.role === "editor";
   const activeMembers = members?.filter((m) => m.active).length ?? 0;
   const dompet = wallets?.find((w) => w.wallet === "dompet")?.balance ?? 0;
   const bank = wallets?.find((w) => w.wallet === "bank")?.balance ?? 0;
@@ -69,8 +75,23 @@ export default async function DashboardPage() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Rekap tunggakan, riwayat pembayaran, dan riwayat penarikan menyusul di
-        iterasi berikutnya — lihat Roadmap di README.
+        Lihat detail tunggakan di{" "}
+        <Link href="/dashboard/rekap" className="underline underline-offset-4">
+          Rekap
+        </Link>
+        {canManage && (
+          <>
+            , catat iuran masuk di{" "}
+            <Link href="/dashboard/payments" className="underline underline-offset-4">
+              Pembayaran
+            </Link>
+            , atau kelola mutasi dana di{" "}
+            <Link href="/dashboard/wallet" className="underline underline-offset-4">
+              Dompet
+            </Link>
+          </>
+        )}
+        .
       </p>
     </div>
   );

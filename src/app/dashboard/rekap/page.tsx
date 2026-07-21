@@ -22,7 +22,7 @@ export default async function RekapPage() {
 
   const [{ data: settings }, { data: overrides }, { data: members }, { data: payments }] =
     await Promise.all([
-      supabase.from("settings").select("iuran_type, iuran_amount").single(),
+      supabase.from("settings").select("iuran_type, iuran_amount, period_start_date").single(),
       supabase.from("dues_overrides").select("period, amount"),
       supabase
         .from("members")
@@ -34,6 +34,7 @@ export default async function RekapPage() {
 
   const iuranType = settings?.iuran_type ?? "bulanan";
   const defaultAmount = settings?.iuran_amount ?? 0;
+  const periodStartDate = new Date(settings?.period_start_date ?? new Date());
   const overridesMap = new Map((overrides ?? []).map((o) => [o.period, o.amount]));
   const today = new Date();
 
@@ -41,6 +42,7 @@ export default async function RekapPage() {
     const memberPayments = (payments ?? []).filter((p) => p.member_id === m.id);
     const dues = computeMemberDues({
       iuranType,
+      periodStartDate,
       joinDate: new Date(m.join_date),
       today,
       defaultAmount,
@@ -60,9 +62,10 @@ export default async function RekapPage() {
         <CardHeader>
           <CardTitle>Rekap Tunggakan</CardTitle>
           <CardDescription>
-            Dihitung otomatis dari periode ({iuranType}) sejak tanggal
-            bergabung sampai hari ini, dikurangi pembayaran yang sudah
-            tercatat. Diurutkan dari penunggak terbanyak.
+            Dihitung otomatis dari periode ({iuranType}) sejak mulai kas atau
+            tanggal bergabung (yang lebih belakangan) sampai hari ini,
+            dikurangi pembayaran yang sudah tercatat. Diurutkan dari
+            penunggak terbanyak.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-2xl font-semibold">
