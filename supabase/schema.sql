@@ -20,6 +20,7 @@ create type public.iuran_type as enum ('harian', 'bulanan');
 create table public.settings (
   id boolean primary key default true,
   class_name text not null default 'Kelas Saya',
+  school_name text,
   iuran_type public.iuran_type not null default 'bulanan',
   iuran_amount numeric(12, 2) not null default 0,
   -- Kas kelas biasanya berlaku satu tahun ajaran: tanggal/bulan mulai
@@ -38,6 +39,16 @@ create table public.dues_overrides (
   -- 'YYYY-MM' untuk mode bulanan, 'YYYY-MM-DD' untuk mode harian.
   period text not null unique,
   amount numeric(12, 2) not null,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+-- Hari libur (weekends are handled in code; this covers national holidays
+-- and school breaks), used by the daily payment form to skip non-school
+-- days when generating periods for a date range. Seeded by fetching a
+-- public holiday API and/or added by hand from Pengaturan.
+create table public.holidays (
+  date date primary key,
   note text,
   created_at timestamptz not null default now()
 );
@@ -252,6 +263,7 @@ create trigger on_auth_user_created
 
 alter table public.settings enable row level security;
 alter table public.dues_overrides enable row level security;
+alter table public.holidays enable row level security;
 alter table public.members enable row level security;
 alter table public.profiles enable row level security;
 alter table public.payments enable row level security;
@@ -271,6 +283,12 @@ create policy "settings_update_admin" on public.settings
 create policy "dues_overrides_select_approved" on public.dues_overrides
   for select to authenticated using (public.is_approved());
 create policy "dues_overrides_write_admin" on public.dues_overrides
+  for all to authenticated using (public.is_admin()) with check (public.is_admin());
+
+-- holidays: approved users can read; only admin can manage.
+create policy "holidays_select_approved" on public.holidays
+  for select to authenticated using (public.is_approved());
+create policy "holidays_write_admin" on public.holidays
   for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
 -- members: approved users can read; admin & editor can manage (including

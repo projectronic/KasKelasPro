@@ -9,6 +9,14 @@ import {
 } from "@/components/ui/card";
 import { SettingsForm } from "./settings-form";
 import { DuesOverrideForm } from "./dues-override-form";
+import { FetchHolidaysForm, AddHolidayForm } from "./holiday-form";
+import { deleteHoliday } from "./actions";
+import { Button } from "@/components/ui/button";
+
+async function handleDeleteHoliday(formData: FormData) {
+  "use server";
+  await deleteHoliday(formData);
+}
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -28,13 +36,18 @@ export default async function SettingsPage() {
 
   const { data: settings } = await supabase
     .from("settings")
-    .select("class_name, iuran_type, iuran_amount, period_start_date")
+    .select("class_name, school_name, iuran_type, iuran_amount, period_start_date")
     .single();
 
   const { data: overrides } = await supabase
     .from("dues_overrides")
     .select("id, period, amount, note")
     .order("period", { ascending: true });
+
+  const { data: holidays } = await supabase
+    .from("holidays")
+    .select("date, note")
+    .order("date", { ascending: true });
 
   return (
     <div className="flex w-full max-w-2xl flex-col gap-6">
@@ -56,6 +69,7 @@ export default async function SettingsPage() {
         <CardContent>
           <SettingsForm
             className={settings?.class_name ?? ""}
+            schoolName={settings?.school_name ?? ""}
             iuranType={settings?.iuran_type ?? "bulanan"}
             iuranAmount={settings?.iuran_amount ?? 0}
             periodStartDate={settings?.period_start_date ?? new Date().toISOString().slice(0, 10)}
@@ -93,6 +107,44 @@ export default async function SettingsPage() {
             )}
           </ul>
           <DuesOverrideForm />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Hari Libur</CardTitle>
+          <CardDescription>
+            Dipakai form pembayaran harian supaya rentang tanggal yang dipilih
+            tidak ikut menghitung akhir pekan dan hari libur. Ambil kalender
+            libur nasional otomatis, lalu tambah atau hapus sesuai kebutuhan
+            (mis. libur semester sekolah).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <FetchHolidaysForm />
+          <ul className="flex flex-col gap-2 text-sm">
+            {holidays?.length ? (
+              holidays.map((h) => (
+                <li
+                  key={h.date}
+                  className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b pb-2"
+                >
+                  <span>
+                    {h.date} {h.note && `— ${h.note}`}
+                  </span>
+                  <form action={handleDeleteHoliday}>
+                    <input type="hidden" name="date" value={h.date} />
+                    <Button type="submit" variant="ghost" size="sm">
+                      Hapus
+                    </Button>
+                  </form>
+                </li>
+              ))
+            ) : (
+              <li className="text-muted-foreground">Belum ada hari libur.</li>
+            )}
+          </ul>
+          <AddHolidayForm />
         </CardContent>
       </Card>
     </div>

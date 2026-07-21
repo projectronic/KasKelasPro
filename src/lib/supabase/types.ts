@@ -19,6 +19,7 @@ export type WalletTransactionType =
 type SettingsRow = {
   id: boolean;
   class_name: string;
+  school_name: string | null;
   iuran_type: IuranType;
   iuran_amount: number;
   period_start_date: string;
@@ -29,6 +30,12 @@ type DuesOverrideRow = {
   id: string;
   period: string;
   amount: number;
+  note: string | null;
+  created_at: string;
+};
+
+type HolidayRow = {
+  date: string;
   note: string | null;
   created_at: string;
 };
@@ -105,6 +112,12 @@ export type Database = {
         Insert: Omit<DuesOverrideRow, "id" | "created_at"> &
           Partial<Pick<DuesOverrideRow, "id">>;
         Update: Partial<DuesOverrideRow>;
+        Relationships: [];
+      };
+      holidays: {
+        Row: HolidayRow;
+        Insert: Omit<HolidayRow, "created_at"> & Partial<Pick<HolidayRow, "created_at">>;
+        Update: Partial<HolidayRow>;
         Relationships: [];
       };
       members: {

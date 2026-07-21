@@ -1,14 +1,15 @@
 "use client";
 
 import { useActionState, useMemo, useRef, useState } from "react";
-import { recordPayment } from "./actions";
+import { recordPayments } from "./actions";
 import { MonthlyPaymentForm } from "./monthly-payment-form";
-import { currentPeriod, getRateForPeriod } from "@/lib/dues";
+import { getRateForPeriod, getSchoolDaysInRange } from "@/lib/dues";
+import type { PeriodDue } from "@/lib/dues";
 import type { IuranType } from "@/lib/supabase/types";
+import { PeriodRow } from "./period-row";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CurrencyInput } from "@/components/currency-input";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ export function PaymentForm({
   periodStartDate,
   overrides,
   allPayments,
+  holidays,
 }: {
   members: Member[];
   iuranType: IuranType;
@@ -34,11 +36,12 @@ export function PaymentForm({
   periodStartDate: string;
   overrides: { period: string; amount: number }[];
   allPayments: { member_id: string; period: string; amount: number }[];
+  holidays: string[];
 }) {
   // Monthly dues can span several unpaid months at once, so it gets a
-  // checkbox picker instead of typing one period at a time. Daily mode
-  // (one row per school day) doesn't have that "catch up" pattern in the
-  // same way yet, so it keeps the plain single-period form below.
+  // checkbox picker instead of typing one period at a time. Daily mode gets
+  // the same picker, but built from a date range instead of arrears, since a
+  // "kas harian" range is usually just "the days I want to pay for."
   if (iuranType === "bulanan") {
     return (
       <MonthlyPaymentForm
@@ -54,117 +57,181 @@ export function PaymentForm({
   return (
     <DailyPaymentForm
       members={members}
-      iuranType={iuranType}
       defaultAmount={defaultAmount}
       overrides={overrides}
+      allPayments={allPayments}
+      holidays={holidays}
     />
   );
 }
 
+function toDateInputValue(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
 function DailyPaymentForm({
   members,
-  iuranType,
   defaultAmount,
   overrides,
+  allPayments,
+  holidays,
 }: {
   members: Member[];
-  iuranType: IuranType;
   defaultAmount: number;
   overrides: { period: string; amount: number }[];
+  allPayments: { member_id: string; period: string; amount: number }[];
+  holidays: string[];
 }) {
   const overridesMap = useMemo(
     () => new Map(overrides.map((o) => [o.period, o.amount])),
     [overrides]
   );
+  const holidaySet = useMemo(() => new Set(holidays), [holidays]);
   const today = useMemo(() => new Date(), []);
-  const initialPeriod = currentPeriod(iuranType, today);
+  const todayStr = toDateInputValue(today);
 
-  const [period, setPeriod] = useState(initialPeriod);
-  const [amount, setAmount] = useState(
-    getRateForPeriod(initialPeriod, defaultAmount, overridesMap)
-  );
   const [memberId, setMemberId] = useState("");
+  const [startDate, setStartDate] = useState(todayStr);
+  const [endDate, setEndDate] = useState(todayStr);
+  // Days in range default to selected; toggling excludes rather than
+  // includes, so widening the date range doesn't require re-checking days.
+  const [excluded, setExcluded] = useState<Set<string>>(new Set());
+
+  const days = useMemo(() => {
+    if (!memberId || !startDate || !endDate || endDate < startDate) return [];
+    const memberPayments = allPayments.filter((p) => p.member_id === memberId);
+    const paidByPeriod = new Map<string, number>();
+    for (const p of memberPayments) {
+      paidByPeriod.set(p.period, (paidByPeriod.get(p.period) ?? 0) + p.amount);
+    }
+    return getSchoolDaysInRange(new Date(startDate), new Date(endDate), holidaySet)
+      .map((period): PeriodDue => {
+        const required = getRateForPeriod(period, defaultAmount, overridesMap);
+        const paid = paidByPeriod.get(period) ?? 0;
+        return { period, required, paid, owed: required - paid };
+      })
+      .filter((p) => p.owed > 0);
+  }, [memberId, startDate, endDate, allPayments, holidaySet, defaultAmount, overridesMap]);
+
+  const selected = days.filter((p) => !excluded.has(p.period));
+  const total = selected.reduce((sum, p) => sum + p.owed, 0);
 
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
-      const result = await recordPayment(formData);
+      const periods = selected.map((p) => ({ period: p.period, amount: p.owed }));
+      formData.set("periods", JSON.stringify(periods));
+
+      const result = await recordPayments(formData);
       if (!result?.error) {
         formRef.current?.reset();
-        setPeriod(initialPeriod);
-        setAmount(getRateForPeriod(initialPeriod, defaultAmount, overridesMap));
         setMemberId("");
+        setStartDate(todayStr);
+        setEndDate(todayStr);
+        setExcluded(new Set());
       }
       return result ?? null;
     },
     null
   );
 
+  function toggle(period: string) {
+    setExcluded((prev) => {
+      const next = new Set(prev);
+      if (next.has(period)) next.delete(period);
+      else next.add(period);
+      return next;
+    });
+  }
+
   return (
-    <form
-      ref={formRef}
-      action={formAction}
-      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-    >
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="member_id">Anggota</Label>
-        <input type="hidden" name="member_id" value={memberId} />
-        <Select value={memberId} onValueChange={(v) => v && setMemberId(v)}>
-          <SelectTrigger id="member_id" className="w-full">
-            <SelectValue placeholder="Pilih anggota" />
-          </SelectTrigger>
-          <SelectContent>
-            {members.map((m) => (
-              <SelectItem key={m.id} value={m.id}>
-                {m.full_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="member_id">Anggota</Label>
+          <input type="hidden" name="member_id" value={memberId} />
+          <Select value={memberId} onValueChange={(v) => v && setMemberId(v)}>
+            <SelectTrigger id="member_id" className="w-full">
+              <SelectValue placeholder="Pilih anggota" />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.full_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="start_date">Tanggal Mulai</Label>
+          <Input
+            id="start_date"
+            type="date"
+            value={startDate}
+            onChange={(e) => {
+              const value = e.target.value;
+              setStartDate(value);
+              if (endDate < value) setEndDate(value);
+            }}
+            required
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="end_date">Tanggal Akhir</Label>
+          <Input
+            id="end_date"
+            type="date"
+            value={endDate}
+            min={startDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="paid_at">Tanggal Bayar</Label>
+          <Input id="paid_at" name="paid_at" type="date" defaultValue={todayStr} required />
+        </div>
       </div>
+
       <div className="flex flex-col gap-2">
-        <Label htmlFor="period">Periode (YYYY-MM-DD)</Label>
-        <Input
-          id="period"
-          name="period"
-          value={period}
-          onChange={(e) => {
-            setPeriod(e.target.value);
-            setAmount(getRateForPeriod(e.target.value, defaultAmount, overridesMap));
-          }}
-          required
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="amount">Nominal (Rp)</Label>
-        <CurrencyInput
-          id="amount"
-          name="amount"
-          value={amount}
-          onValueChange={setAmount}
-          required
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="paid_at">Tanggal Bayar</Label>
-        <Input
-          id="paid_at"
-          name="paid_at"
-          type="date"
-          defaultValue={today.toISOString().slice(0, 10)}
-          required
-        />
-      </div>
-      <div className="col-span-full flex flex-col gap-2 sm:col-span-1">
         <Label htmlFor="note">Catatan (opsional)</Label>
-        <Input id="note" name="note" placeholder="mis. bayar 2 hari sekaligus" />
+        <Input id="note" name="note" placeholder="mis. bayar tunai" />
       </div>
-      <div className="col-span-full flex flex-col gap-2">
-        {state?.error && (
-          <p className="text-sm text-destructive">{state.error}</p>
-        )}
-        <Button type="submit" disabled={isPending || !memberId} className="w-fit">
-          {isPending ? "Menyimpan..." : "Catat Pembayaran"}
+
+      {memberId && (
+        <div className="flex flex-col gap-2">
+          <Label>Hari yang Dibayar</Label>
+          {days.length ? (
+            <div className="flex flex-col divide-y rounded-md border">
+              {days.map((p) => (
+                <PeriodRow
+                  key={p.period}
+                  {...p}
+                  checked={!excluded.has(p.period)}
+                  onToggle={toggle}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Tidak ada hari sekolah pada rentang ini (akhir pekan dan hari
+              libur dikecualikan otomatis), atau semua sudah lunas.
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
+        <Button
+          type="submit"
+          disabled={isPending || !memberId || selected.length === 0}
+          className="w-fit"
+        >
+          {isPending
+            ? "Menyimpan..."
+            : `Catat Pembayaran${selected.length ? ` (${selected.length} hari, Rp ${total.toLocaleString("id-ID")})` : ""}`}
         </Button>
       </div>
     </form>

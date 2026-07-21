@@ -40,6 +40,7 @@ export default async function PaymentsPage() {
     { data: overrides },
     { data: allPayments },
     { data: recentPayments },
+    { data: holidays },
   ] = await Promise.all([
     supabase
       .from("members")
@@ -55,6 +56,7 @@ export default async function PaymentsPage() {
       .select("id, member_id, period, amount, paid_at, note")
       .order("paid_at", { ascending: false })
       .limit(20),
+    supabase.from("holidays").select("date"),
   ]);
 
   const memberNames = new Map((allMembers ?? []).map((m) => [m.id, m.full_name]));
@@ -84,6 +86,7 @@ export default async function PaymentsPage() {
             periodStartDate={settings?.period_start_date ?? new Date().toISOString().slice(0, 10)}
             overrides={overrides ?? []}
             allPayments={allPayments ?? []}
+            holidays={(holidays ?? []).map((h) => h.date)}
           />
         </CardContent>
       </Card>

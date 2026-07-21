@@ -39,6 +39,11 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
+  const { data: settings } = await supabase
+    .from("settings")
+    .select("class_name, school_name")
+    .single();
+
   const role = profile?.role ?? "viewer";
   const canManage = role === "admin" || role === "editor";
   const isAdmin = role === "admin";
@@ -83,6 +88,8 @@ export default async function DashboardLayout({
         title={profile?.title ?? null}
         canManage={canManage}
         isAdmin={isAdmin}
+        className={settings?.class_name ?? null}
+        schoolName={settings?.school_name ?? null}
       />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">

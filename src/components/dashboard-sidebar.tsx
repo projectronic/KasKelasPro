@@ -29,6 +29,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -50,6 +51,8 @@ export function DashboardSidebar({
   title,
   canManage,
   isAdmin,
+  className,
+  schoolName,
 }: {
   fullName: string | null;
   email: string | null;
@@ -57,6 +60,8 @@ export function DashboardSidebar({
   title: string | null;
   canManage: boolean;
   isAdmin: boolean;
+  className: string | null;
+  schoolName: string | null;
 }) {
   const pathname = usePathname();
 
@@ -79,6 +84,8 @@ export function DashboardSidebar({
     .map((part) => part[0]?.toUpperCase())
     .join("");
   const subtitle = title || role.toUpperCase();
+  const headerTitle = className ? `Kas Kelas ${className}` : "KasKelasPro";
+  const headerSubtitle = schoolName || "Kas Kelas";
 
   return (
     <Sidebar collapsible="icon">
@@ -93,9 +100,9 @@ export function DashboardSidebar({
                 <Landmark className="size-4" />
               </div>
               <div className="grid flex-1 text-left leading-tight">
-                <span className="truncate font-semibold">KasKelasPro</span>
+                <span className="truncate font-semibold">{headerTitle}</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  Kas Kelas
+                  {headerSubtitle}
                 </span>
               </div>
             </SidebarMenuButton>
@@ -154,16 +161,18 @@ export function DashboardSidebar({
                 side="top"
                 className="w-[--anchor-width] min-w-56"
               >
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="truncate font-medium">{displayName}</span>
-                    {email && (
-                      <span className="truncate text-xs text-muted-foreground">
-                        {email}
-                      </span>
-                    )}
-                  </div>
-                </DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="truncate font-medium">{displayName}</span>
+                      {email && (
+                        <span className="truncate text-xs text-muted-foreground">
+                          {email}
+                        </span>
+                      )}
+                    </div>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <form action={signOut}>
                   <DropdownMenuItem

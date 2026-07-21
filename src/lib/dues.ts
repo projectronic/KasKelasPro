@@ -126,3 +126,42 @@ export function computeMemberDues({
 export function currentPeriod(iuranType: IuranType, today: Date): string {
   return iuranType === "bulanan" ? toMonthPeriod(today) : toDayPeriod(today);
 }
+
+/**
+ * The next `count` calendar-month periods after today's month, for recording
+ * prepayments ahead of when they're actually due (bulanan mode only — daily
+ * mode has no "pay ahead" flow yet).
+ */
+export function getUpcomingPeriods(today: Date, count: number): string[] {
+  const periods: string[] = [];
+  const cursor = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  for (let i = 0; i < count; i++) {
+    periods.push(toMonthPeriod(cursor));
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return periods;
+}
+
+/**
+ * School days (Mon–Fri, minus `holidays`) from `start` to `end` inclusive.
+ * Used by the daily payment form's date-range picker so a range spanning a
+ * weekend or a holiday doesn't get charged for those days.
+ */
+export function getSchoolDaysInRange(
+  start: Date,
+  end: Date,
+  holidays: Set<string>
+): string[] {
+  const days: string[] = [];
+  const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+  const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  while (cursor <= last) {
+    const day = cursor.getDay();
+    const period = toDayPeriod(cursor);
+    if (day >= 1 && day <= 5 && !holidays.has(period)) {
+      days.push(period);
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
+}

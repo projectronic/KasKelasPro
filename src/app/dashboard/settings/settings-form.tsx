@@ -19,11 +19,13 @@ type ActionState = { error?: string } | null;
 
 export function SettingsForm({
   className,
+  schoolName,
   iuranType,
   iuranAmount,
   periodStartDate,
 }: {
   className: string;
+  schoolName: string;
   iuranType: IuranType;
   iuranAmount: number;
   periodStartDate: string;
@@ -42,6 +44,15 @@ export function SettingsForm({
           name="class_name"
           defaultValue={className}
           required
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="school_name">Nama Sekolah</Label>
+        <Input
+          id="school_name"
+          name="school_name"
+          defaultValue={schoolName}
+          placeholder="mis. SMPN 16 Bandung"
         />
       </div>
       <div className="flex flex-col gap-2">

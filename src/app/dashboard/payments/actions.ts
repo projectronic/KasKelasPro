@@ -9,35 +9,7 @@ function revalidatePaymentPaths() {
   revalidatePath("/dashboard");
 }
 
-export async function recordPayment(formData: FormData) {
-  const supabase = await createClient();
-
-  const memberId = formData.get("member_id") as string;
-  const period = formData.get("period") as string;
-  const amount = Number(formData.get("amount"));
-  const note = (formData.get("note") as string) || null;
-  const paidAt = formData.get("paid_at") as string;
-
-  if (!memberId || !period || !amount) {
-    return { error: "Anggota, periode, dan nominal wajib diisi." };
-  }
-
-  const { error } = await supabase.rpc("record_payment", {
-    p_member_id: memberId,
-    p_period: period,
-    p_amount: amount,
-    p_note: note,
-    p_paid_at: paidAt ? new Date(paidAt).toISOString() : undefined,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  revalidatePaymentPaths();
-}
-
-/** Bulk-records one payment per checked period (bulanan checkbox flow). */
+/** Bulk-records one payment per checked period (monthly/daily checkbox flow). */
 export async function recordPayments(formData: FormData) {
   const supabase = await createClient();
 

@@ -2,11 +2,12 @@
 
 import { useActionState, useMemo, useRef, useState } from "react";
 import { recordPayments } from "./actions";
-import { computeMemberDues } from "@/lib/dues";
+import { computeMemberDues, getRateForPeriod, getUpcomingPeriods } from "@/lib/dues";
+import type { PeriodDue } from "@/lib/dues";
+import { PeriodRow } from "./period-row";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -40,6 +41,7 @@ export function MonthlyPaymentForm({
 
   const [memberId, setMemberId] = useState("");
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [showPrepay, setShowPrepay] = useState(false);
 
   const unpaidPeriods = useMemo(() => {
     const member = members.find((m) => m.id === memberId);
@@ -56,14 +58,34 @@ export function MonthlyPaymentForm({
     return dues.unpaidPeriods;
   }, [memberId, members, periodStartDate, today, defaultAmount, overridesMap, allPayments]);
 
-  const total = unpaidPeriods
+  // Months not due yet, offered separately so a member can pay ahead. Unlike
+  // unpaidPeriods, being listed here doesn't mean it's owed — only fully
+  // prepaid months (owed <= 0) are dropped from the list.
+  const futurePeriods = useMemo(() => {
+    if (!memberId) return [];
+    const memberPayments = allPayments.filter((p) => p.member_id === memberId);
+    const paidByPeriod = new Map<string, number>();
+    for (const p of memberPayments) {
+      paidByPeriod.set(p.period, (paidByPeriod.get(p.period) ?? 0) + p.amount);
+    }
+    return getUpcomingPeriods(today, 12)
+      .map((period): PeriodDue => {
+        const required = getRateForPeriod(period, defaultAmount, overridesMap);
+        const paid = paidByPeriod.get(period) ?? 0;
+        return { period, required, paid, owed: required - paid };
+      })
+      .filter((p) => p.owed > 0);
+  }, [memberId, allPayments, today, defaultAmount, overridesMap]);
+
+  const selectablePeriods = [...unpaidPeriods, ...futurePeriods];
+  const total = selectablePeriods
     .filter((p) => checked.has(p.period))
     .reduce((sum, p) => sum + p.owed, 0);
 
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
-      const periods = unpaidPeriods
+      const periods = selectablePeriods
         .filter((p) => checked.has(p.period))
         .map((p) => ({ period: p.period, amount: p.owed }));
       formData.set("periods", JSON.stringify(periods));
@@ -72,6 +94,7 @@ export function MonthlyPaymentForm({
       if (!result?.error) {
         formRef.current?.reset();
         setChecked(new Set());
+        setShowPrepay(false);
       }
       return result ?? null;
     },
@@ -99,6 +122,7 @@ export function MonthlyPaymentForm({
               if (!value) return;
               setMemberId(value);
               setChecked(new Set());
+              setShowPrepay(false);
             }}
           >
             <SelectTrigger id="member_id" className="w-full">
@@ -135,34 +159,47 @@ export function MonthlyPaymentForm({
           {unpaidPeriods.length ? (
             <div className="flex flex-col divide-y rounded-md border">
               {unpaidPeriods.map((p) => (
-                <label
+                <PeriodRow
                   key={p.period}
-                  className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm"
-                >
-                  <span className="flex items-center gap-2.5">
-                    <Checkbox
-                      checked={checked.has(p.period)}
-                      onCheckedChange={() => toggle(p.period)}
-                    />
-                    <span>
-                      {p.period}
-                      {p.paid > 0 && (
-                        <span className="ml-1.5 text-xs text-muted-foreground">
-                          (sudah bayar sebagian: Rp {p.paid.toLocaleString("id-ID")})
-                        </span>
-                      )}
-                    </span>
-                  </span>
-                  <span className="shrink-0 font-medium">
-                    Rp {p.owed.toLocaleString("id-ID")}
-                  </span>
-                </label>
+                  {...p}
+                  checked={checked.has(p.period)}
+                  onToggle={toggle}
+                />
               ))}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
               Anggota ini tidak punya tunggakan sampai bulan berjalan.
             </p>
+          )}
+        </div>
+      )}
+
+      {memberId && futurePeriods.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => setShowPrepay((v) => !v)}
+            className="w-fit text-sm text-muted-foreground underline underline-offset-2"
+          >
+            {showPrepay
+              ? "Sembunyikan bayar di muka"
+              : "+ Bayar di muka untuk bulan berikutnya"}
+          </button>
+          {showPrepay && (
+            <div className="flex flex-col gap-2">
+              <Label>Bayar di Muka</Label>
+              <div className="flex flex-col divide-y rounded-md border">
+                {futurePeriods.map((p) => (
+                  <PeriodRow
+                    key={p.period}
+                    {...p}
+                    checked={checked.has(p.period)}
+                    onToggle={toggle}
+                  />
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}

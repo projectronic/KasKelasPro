@@ -48,9 +48,12 @@ Bendahara kelas biasanya mencatat kas di buku, grup chat, atau spreadsheet — g
 |---|---|
 | 🗓️ **Mode iuran fleksibel** | Pilih saat setup: **iuran harian** (misal Rp1.000/hari sekolah) atau **iuran bulanan** (nominal tetap per bulan) |
 | ⚙️ **Pengaturan besar iuran** | Nominal iuran diatur lewat halaman Settings, tidak hardcode di kode. Bisa juga atur **pengecualian nominal per bulan/periode tertentu** (mis. bulan pertama beda karena ada biaya pendaftaran) dan **tanggal mulai kas** (biasanya awal tahun ajaran) — tunggakan dihitung dari situ, atau dari tanggal gabung anggota kalau lebih belakangan |
-| ✅ **Catat pembayaran multi-bulan** | Mode bulanan: pilih anggota, sistem otomatis tampilkan checklist bulan yang belum lunas dengan nominalnya — tinggal centang yang mau dibayar sekaligus |
+| ✅ **Catat pembayaran multi-bulan + bayar di muka** | Mode bulanan: pilih anggota, sistem otomatis tampilkan checklist bulan yang belum lunas dengan nominalnya — tinggal centang yang mau dibayar sekaligus. Ada juga opsi **bayar di muka** untuk 12 bulan ke depan (belum jatuh tempo), buat anggota yang mau bayar borongan di awal |
+| 📅 **Pembayaran harian by rentang tanggal** | Mode harian: pilih tanggal mulai & akhir, sistem otomatis buat checklist tiap hari sekolah di rentang itu (default 1 hari) — **akhir pekan dan hari libur otomatis dikecualikan** |
+| 🎉 **Hari Libur** | Ambil kalender libur nasional otomatis lewat API (Nager.Date), atau tambah/hapus manual (mis. libur semester) — dipakai form pembayaran harian di atas supaya tidak salah hitung |
 | 👥 **Manajemen anggota** | Tambah/edit data siswa, termasuk **nama, email, telepon siswa, dan nama/email/telepon orang tua/wali**. Nomor telepon jadi link WhatsApp — klik langsung buka `wa.me` |
-| 🏷️ **Nama kelas dinamis** | Judul tab browser dan halaman login/daftar otomatis pakai **Nama Kelas** dari Pengaturan, bukan hardcode "KasKelasPro" |
+| 🏷️ **Nama kelas & sekolah dinamis** | Judul tab browser dan halaman login/daftar otomatis pakai **Nama Kelas** dari Pengaturan, bukan hardcode "KasKelasPro". Sidebar menampilkan **Nama Kelas** sebagai judul dan **Nama Sekolah** sebagai subjudul |
+| 🗂️ **Sidebar navigasi responsif** | Sidebar collapsible (bisa diciutkan jadi ikon saja) di desktop, otomatis jadi drawer geser di mobile — beserta skeleton loading state di tiap halaman |
 | 💯 **Format ribuan otomatis** | Semua input nominal (iuran, pengecualian, pembayaran, penarikan, transfer) tampil dengan pemisah ribuan (mis. `10.000`) selagi diketik |
 | 📝 **Pendaftaran terbuka + approval** | Siapa saja bisa daftar sendiri sebagai **siswa** atau **orang tua/wali** (akun & password terpisah), tapi menunggu **approval admin/editor** sebelum bisa mengakses data kelas — bukan whitelist tertutup |
 | 👨‍👩‍👧 **Siswa & orang tua akun terpisah** | Dicocokkan otomatis ke anggota yang sama lewat nama siswa, supaya tidak dihitung dobel di jumlah anggota/tunggakan; admin bisa membetulkan lewat **Edit Anggota** kalau salah sambung |
@@ -163,9 +166,12 @@ KasKelasPro menyimpan **data pribadi** (nama, email, nomor telepon siswa maupun 
 - [x] Tanggal mulai kas di Settings + checklist pembayaran multi-bulan (mode bulanan) + input tanggal di pembayaran/penarikan/transfer
 - [x] Halaman Riwayat aktivitas (audit log pembayaran, mutasi dana, approval)
 - [x] Nama kelas dinamis di tab & halaman login/daftar, format ribuan di semua input nominal, telepon jadi link WhatsApp, jabatan custom (label saja) untuk admin/editor
-- [ ] Checklist pembayaran multi-periode untuk mode harian (baru tersedia untuk bulanan)
+- [x] Sidebar navigasi (collapsible di desktop, drawer di mobile) menggantikan top nav bar, beserta skeleton loading state
+- [x] Nama Sekolah terpisah dari Nama Kelas di Pengaturan, ditampilkan sebagai subjudul sidebar
+- [x] Checklist pembayaran multi-periode untuk mode harian (rentang tanggal mulai/akhir, akhir pekan & hari libur otomatis dikecualikan)
+- [x] Bayar di muka (prepayment) untuk mode bulanan — checklist bulan-bulan berikutnya yang belum jatuh tempo, bukan cuma tunggakan
+- [x] Hari Libur: fetch otomatis dari API kalender nasional + kelola manual (tambah/hapus) di Pengaturan
 - [ ] Role & permission yang benar-benar dinamis (admin bikin role + pilih izinnya sendiri) — lihat penjelasan di [Role & Hak Akses](#-role--hak-akses)
-- [ ] Sidebar navigasi (collapsible) — saat ini navigasi masih top nav bar sederhana, belum ada sidebar
 
 ## 🤝 Kontribusi
 
