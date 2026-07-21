@@ -8,6 +8,7 @@
 // whole Database generic silently collapses to `never` if you use one here.
 
 export type AppRole = "admin" | "editor" | "viewer";
+export type AccountType = "siswa" | "orang_tua";
 export type IuranType = "harian" | "bulanan";
 export type WalletName = "dompet" | "bank";
 export type WalletTransactionType =
@@ -60,6 +61,7 @@ type ProfileRow = {
   role: AppRole;
   title: string | null;
   member_id: string | null;
+  account_type: AccountType | null;
   approved: boolean;
   created_at: string;
 };

@@ -77,6 +77,9 @@ create table public.profiles (
   -- the README for why this stops short of fully admin-defined permissions.
   title text,
   member_id uuid references public.members (id) on delete set null,
+  -- Which side of the signup form the account came from — set from signup
+  -- metadata (see handle_new_user() below), editable afterward by admin.
+  account_type text check (account_type in ('siswa', 'orang_tua')),
   -- Self-registered accounts start unapproved and can't read class data
   -- until an admin/editor approves them. Admin/editor accounts are always
   -- treated as approved regardless of this flag (see is_approved()).
@@ -246,8 +249,8 @@ begin
     end if;
   end if;
 
-  insert into public.profiles (id, email, full_name, role, member_id, approved)
-  values (new.id, new.email, own_name, 'viewer', new_member_id, false);
+  insert into public.profiles (id, email, full_name, role, member_id, account_type, approved)
+  values (new.id, new.email, own_name, 'viewer', new_member_id, registrant_type, false);
 
   return new;
 end;

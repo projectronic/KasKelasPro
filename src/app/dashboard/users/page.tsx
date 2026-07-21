@@ -20,6 +20,14 @@ import { RoleRowForm } from "./role-row-form";
 import { ResetPasswordButton } from "./reset-password-button";
 import { ApproveButton } from "./approve-button";
 import { TitleRowForm } from "./title-row-form";
+import { NameRowForm } from "./name-row-form";
+import { AccountTypeRowForm } from "./account-type-row-form";
+import { MemberLinkRowForm } from "./member-link-row-form";
+
+const accountTypeLabels: Record<string, string> = {
+  siswa: "Siswa",
+  orang_tua: "Orang Tua",
+};
 
 export default async function UsersPage() {
   const supabase = await createClient();
@@ -43,9 +51,9 @@ export default async function UsersPage() {
   const [{ data: profiles }, { data: members }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, email, full_name, role, title, member_id, approved, created_at")
+      .select("id, email, full_name, role, title, member_id, account_type, approved, created_at")
       .order("created_at", { ascending: true }),
-    supabase.from("members").select("id, full_name"),
+    supabase.from("members").select("id, full_name").order("full_name"),
   ]);
 
   const memberNames = new Map((members ?? []).map((m) => [m.id, m.full_name]));
@@ -64,7 +72,8 @@ export default async function UsersPage() {
           <CardTitle>Kelola Pengguna</CardTitle>
           <CardDescription>
             Pendaftar baru perlu di-approve (admin & editor bisa approve)
-            sebelum bisa mengakses data kelas. Ubah role hanya bisa admin.
+            sebelum bisa mengakses data kelas. Ubah nama, tipe akun, relasi
+            anggota, role, dan jabatan hanya bisa admin.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -80,6 +89,7 @@ export default async function UsersPage() {
                     <TableRow>
                       <TableHead>Nama</TableHead>
                       <TableHead>Email</TableHead>
+                      <TableHead>Tipe Akun</TableHead>
                       <TableHead>Terhubung Anggota</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Jabatan</TableHead>
@@ -90,10 +100,36 @@ export default async function UsersPage() {
                   <TableBody>
                     {profiles.map((p) => (
                       <TableRow key={p.id}>
-                        <TableCell className="font-medium">{p.full_name ?? "-"}</TableCell>
+                        <TableCell className="font-medium">
+                          {isAdmin ? (
+                            <NameRowForm profileId={p.id} fullName={p.full_name} />
+                          ) : (
+                            p.full_name ?? "-"
+                          )}
+                        </TableCell>
                         <TableCell>{p.email}</TableCell>
                         <TableCell>
-                          {p.member_id ? memberNames.get(p.member_id) ?? "-" : "-"}
+                          {isAdmin ? (
+                            <AccountTypeRowForm
+                              profileId={p.id}
+                              accountType={p.account_type}
+                            />
+                          ) : (
+                            (p.account_type && accountTypeLabels[p.account_type]) ?? "-"
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {isAdmin ? (
+                            <MemberLinkRowForm
+                              profileId={p.id}
+                              memberId={p.member_id}
+                              members={members ?? []}
+                            />
+                          ) : p.member_id ? (
+                            memberNames.get(p.member_id) ?? "-"
+                          ) : (
+                            "-"
+                          )}
                         </TableCell>
                         <TableCell>
                           {isAdmin ? (
@@ -139,7 +175,11 @@ export default async function UsersPage() {
                   <div key={p.id} className="flex flex-col gap-3 rounded-lg border p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-medium">{p.full_name ?? "-"}</p>
+                        {isAdmin ? (
+                          <NameRowForm profileId={p.id} fullName={p.full_name} />
+                        ) : (
+                          <p className="font-medium">{p.full_name ?? "-"}</p>
+                        )}
                         <p className="text-sm text-muted-foreground">{p.email}</p>
                       </div>
                       {p.approved ? (
@@ -150,9 +190,30 @@ export default async function UsersPage() {
                     </div>
 
                     <div className="flex flex-col gap-1.5 text-sm">
-                      <div className="flex justify-between gap-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-muted-foreground">Tipe Akun</span>
+                        {isAdmin ? (
+                          <AccountTypeRowForm
+                            profileId={p.id}
+                            accountType={p.account_type}
+                          />
+                        ) : (
+                          <span>
+                            {(p.account_type && accountTypeLabels[p.account_type]) ?? "-"}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
                         <span className="text-muted-foreground">Anggota</span>
-                        <span>{p.member_id ? memberNames.get(p.member_id) ?? "-" : "-"}</span>
+                        {isAdmin ? (
+                          <MemberLinkRowForm
+                            profileId={p.id}
+                            memberId={p.member_id}
+                            members={members ?? []}
+                          />
+                        ) : (
+                          <span>{p.member_id ? memberNames.get(p.member_id) ?? "-" : "-"}</span>
+                        )}
                       </div>
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-muted-foreground">Role</span>

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import type { AppRole } from "@/lib/supabase/types";
+import type { AccountType, AppRole } from "@/lib/supabase/types";
 
 export async function updateUserRole(formData: FormData) {
   const supabase = await createClient();
@@ -62,6 +62,108 @@ export async function updateUserTitle(formData: FormData) {
 
   revalidatePath("/dashboard/users");
   revalidatePath("/dashboard");
+}
+
+export async function updateUserName(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: callerProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single();
+
+  if (callerProfile?.role !== "admin") {
+    return { error: "Hanya admin yang bisa mengubah nama." };
+  }
+
+  const profileId = formData.get("profile_id") as string;
+  const fullName = (formData.get("full_name") as string)?.trim();
+
+  if (!fullName) {
+    return { error: "Nama tidak boleh kosong." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: fullName })
+    .eq("id", profileId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/users");
+  revalidatePath("/dashboard");
+}
+
+export async function updateUserAccountType(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: callerProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single();
+
+  if (callerProfile?.role !== "admin") {
+    return { error: "Hanya admin yang bisa mengubah tipe akun." };
+  }
+
+  const profileId = formData.get("profile_id") as string;
+  const accountType = (formData.get("account_type") as AccountType) || null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ account_type: accountType })
+    .eq("id", profileId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/users");
+}
+
+export async function updateUserMemberLink(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: callerProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user!.id)
+    .single();
+
+  if (callerProfile?.role !== "admin") {
+    return { error: "Hanya admin yang bisa mengubah relasi anggota." };
+  }
+
+  const profileId = formData.get("profile_id") as string;
+  const memberId = (formData.get("member_id") as string) || null;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ member_id: memberId })
+    .eq("id", profileId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/dashboard/users");
+  revalidatePath("/dashboard/members");
 }
 
 export async function approveRegistration(formData: FormData) {
