@@ -5,6 +5,8 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](./LICENSE)
 [![Made with Next.js](https://img.shields.io/badge/Made%20with-Next.js-000000?logo=next.js)](https://nextjs.org)
 [![Powered by Supabase](https://img.shields.io/badge/Powered%20by-Supabase-3ECF8E?logo=supabase)](https://supabase.com)
+[![UI: shadcn/ui](https://img.shields.io/badge/UI-shadcn%2Fui-000000?logo=shadcnui)](https://ui.shadcn.com)
+[![Charts: Recharts](https://img.shields.io/badge/Charts-Recharts-22b5bf)](https://recharts.org)
 [![Deploy on Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fprojectronic%2FKasKelasPro)
 [![Status](https://img.shields.io/badge/status-work%20in%20progress-orange)]()
 
@@ -61,6 +63,9 @@ Bendahara kelas biasanya mencatat kas di buku, grup chat, atau spreadsheet — g
 | 💵 **Dompet & Bank** | Pisah saldo kas tunai dan saldo bank, dengan mutasi antar-dompet |
 | 📊 **Rekap & tunggakan otomatis** | Hitung tunggakan berdasarkan mode iuran yang aktif |
 | 🧾 **Riwayat penarikan** | Catat penggunaan dana lengkap dengan alasan, sebagai bukti pertanggungjawaban |
+| 🛠️ **Koreksi/hapus pembayaran** | Admin/editor bisa membetulkan atau menghapus pembayaran yang salah catat (typo nominal, salah anggota, dll) langsung dari halaman Pembayaran — tetap tercatat di Riwayat Aktivitas walau datanya sudah dihapus |
+| 📊 **Dashboard dengan chart** | Total Saldo, chart radial Total Uang (saldo vs pengeluaran sepanjang waktu), Jumlah Siswa, dan combo chart bulanan (pembayaran diterima vs tunggakan, plus tren pemasukan/pengeluaran) |
+| 🪪 **Tipe Akun & edit Pengguna** | Setiap akun ditandai **Siswa** atau **Orang Tua** (otomatis dari pendaftaran, bisa diubah admin). Admin juga bisa membetulkan nama akun dan relasi ke Anggota langsung dari halaman Pengguna, bukan cuma dari halaman Anggota |
 | 🔑 **Reset password mandiri** | Anggota bisa reset password sendiri lewat email (halaman Lupa Password), admin juga bisa memicu reset untuk akun tertentu |
 | 🌗 **Dark/light mode** | Toggle tema (Terang/Gelap/Sistem) di pojok kanan atas setiap halaman, tersimpan sesuai preferensi browser |
 | 🕒 **Riwayat aktivitas** | Log siapa melakukan apa dan kapan (pembayaran, penarikan/transfer dana, approval pendaftaran) — halaman Riwayat, admin/editor saja |
@@ -69,6 +74,7 @@ Bendahara kelas biasanya mencatat kas di buku, grup chat, atau spreadsheet — g
 
 - **[Next.js](https://nextjs.org)** — frontend + API routes
 - **[Supabase](https://supabase.com)** — Postgres database, Auth, dan Row Level Security untuk role management
+- **[shadcn/ui](https://ui.shadcn.com)** — komponen UI (sidebar, dialog, select, dll) + [Recharts](https://recharts.org) untuk chart di Dashboard
 - **[Vercel](https://vercel.com)** — hosting & CI/CD
 
 ## 🔐 Role & Hak Akses
