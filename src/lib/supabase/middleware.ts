@@ -38,7 +38,12 @@ export async function updateSession(request: NextRequest) {
     // /reset-password relies on a recovery session established client-side
     // from the URL hash (#access_token=...), which the server can't see on
     // the very first request — it must be reachable before that happens.
-    request.nextUrl.pathname.startsWith("/reset-password");
+    request.nextUrl.pathname.startsWith("/reset-password") ||
+    // Supabase's email confirmation / recovery links land back on the app
+    // with ?code=... (PKCE) before a session exists yet — whichever page
+    // that is (usually "/") has to be reachable so it can exchange the
+    // code for a session, instead of being bounced to /login first.
+    request.nextUrl.searchParams.has("code");
 
   if (!user && !isAuthRoute) {
     const url = request.nextUrl.clone();

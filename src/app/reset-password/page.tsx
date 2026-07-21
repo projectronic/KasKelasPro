@@ -27,25 +27,37 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     const supabase = createClient();
 
-    // The reset-password link puts recovery tokens in the URL hash, which
-    // supabase-js parses client-side into a session. There's no reliable
-    // "done parsing" signal other than this event, so we listen for it
-    // instead of just checking getSession() once on mount.
+    // Depending on the Supabase project's auth flow setting, the recovery
+    // link lands here one of two ways: with ?code=... in the query string
+    // (PKCE — needs an explicit exchange), or with tokens in the URL hash
+    // (implicit — supabase-js parses that on its own and fires an
+    // onAuthStateChange event). Handle both so it works either way.
+    function markReady() {
+      readyRef.current = true;
+      setReady(true);
+    }
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
-        readyRef.current = true;
-        setReady(true);
+        markReady();
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        readyRef.current = true;
-        setReady(true);
-      }
-    });
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) {
+          markReady();
+          window.history.replaceState({}, "", "/reset-password");
+        }
+      });
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) markReady();
+      });
+    }
 
     const timeout = setTimeout(() => {
       if (!readyRef.current) setLinkInvalid(true);

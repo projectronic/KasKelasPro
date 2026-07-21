@@ -79,7 +79,10 @@ Viewer diaktifkan otomatis untuk siapa pun yang mendaftar dengan **email yang su
 
 1. Buat akun/project baru di [supabase.com](https://supabase.com) (gratis).
 2. Buka **SQL Editor** di dashboard project → tempel seluruh isi [`supabase/schema.sql`](./supabase/schema.sql) → **Run**. Ini akan membuat semua tabel, RLS policy, trigger whitelist-signup, dan fungsi ledger sekaligus.
-3. Buka **Project Settings → API**, catat **Project URL** dan **anon public key** — dipakai di langkah 3 bagian deploy.
+3. Buka **Project Settings → API**, catat **Project URL** dan **anon/public key** (di dashboard Supabase yang lebih baru namanya **Publishable key**, format `sb_publishable_...` — fungsinya sama persis, tinggal pakai) — dipakai di langkah 3 bagian deploy.
+
+   ![Lokasi Project URL dan Publishable key di dashboard Supabase](./docs/images/supabase-setup.png)
+
 4. Buka **Authentication → URL Configuration**, isi **Site URL** dengan domain Vercel kamu nanti (bisa diisi/diubah belakangan setelah deploy jadi tahu domainnya).
 
 ### 2. Deploy ke Vercel
@@ -94,6 +97,8 @@ Viewer diaktifkan otomatis untuk siapa pun yang mendaftar dengan **email yang su
 
 1. Setelah deploy sukses, salin domain Vercel kamu (mis. `kaskelaspro-punyaku.vercel.app`).
 2. Kembali ke Supabase → **Authentication → URL Configuration** → update **Site URL** dengan domain itu, supaya link konfirmasi email mengarah ke tempat yang benar.
+
+   > ⚠️ **Site URL harus URL lengkap dengan skema `https://`**, contoh: `https://kaskelaspro-punyaku.vercel.app` — bukan cuma `kaskelaspro-punyaku.vercel.app`. Kalau skemanya kelupaan, link konfirmasi email/reset password akan salah arah (browser mendarat di domain `*.supabase.co` dengan error `"requested path is invalid"` alih-alih ke aplikasi kamu).
 
 ### 4. Pemakaian pertama
 
