@@ -41,6 +41,7 @@ export function MonthlyPaymentForm({
 
   const [memberId, setMemberId] = useState("");
   const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [amounts, setAmounts] = useState<Map<string, number>>(new Map());
   const [showPrepay, setShowPrepay] = useState(false);
 
   const unpaidPeriods = useMemo(() => {
@@ -78,22 +79,28 @@ export function MonthlyPaymentForm({
   }, [memberId, allPayments, today, defaultAmount, overridesMap]);
 
   const selectablePeriods = [...unpaidPeriods, ...futurePeriods];
+
+  function getAmount(p: PeriodDue) {
+    return amounts.get(p.period) ?? p.owed;
+  }
+
   const total = selectablePeriods
     .filter((p) => checked.has(p.period))
-    .reduce((sum, p) => sum + p.owed, 0);
+    .reduce((sum, p) => sum + getAmount(p), 0);
 
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
       const periods = selectablePeriods
-        .filter((p) => checked.has(p.period))
-        .map((p) => ({ period: p.period, amount: p.owed }));
+        .filter((p) => checked.has(p.period) && getAmount(p) > 0)
+        .map((p) => ({ period: p.period, amount: getAmount(p) }));
       formData.set("periods", JSON.stringify(periods));
 
       const result = await recordPayments(formData);
       if (!result?.error) {
         formRef.current?.reset();
         setChecked(new Set());
+        setAmounts(new Map());
         setShowPrepay(false);
       }
       return result ?? null;
@@ -110,6 +117,11 @@ export function MonthlyPaymentForm({
     });
   }
 
+  function changeAmount(period: string, amount: number) {
+    setAmounts((prev) => new Map(prev).set(period, amount));
+    setChecked((prev) => (prev.has(period) ? prev : new Set(prev).add(period)));
+  }
+
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -122,6 +134,7 @@ export function MonthlyPaymentForm({
               if (!value) return;
               setMemberId(value);
               setChecked(new Set());
+              setAmounts(new Map());
               setShowPrepay(false);
             }}
           >
@@ -162,8 +175,10 @@ export function MonthlyPaymentForm({
                 <PeriodRow
                   key={p.period}
                   {...p}
+                  amount={getAmount(p)}
                   checked={checked.has(p.period)}
                   onToggle={toggle}
+                  onAmountChange={changeAmount}
                 />
               ))}
             </div>
@@ -194,8 +209,10 @@ export function MonthlyPaymentForm({
                   <PeriodRow
                     key={p.period}
                     {...p}
+                    amount={getAmount(p)}
                     checked={checked.has(p.period)}
                     onToggle={toggle}
+                    onAmountChange={changeAmount}
                   />
                 ))}
               </div>

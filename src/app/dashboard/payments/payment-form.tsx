@@ -96,6 +96,7 @@ function DailyPaymentForm({
   // Days in range default to selected; toggling excludes rather than
   // includes, so widening the date range doesn't require re-checking days.
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
+  const [amounts, setAmounts] = useState<Map<string, number>>(new Map());
 
   const days = useMemo(() => {
     if (!memberId || !startDate || !endDate || endDate < startDate) return [];
@@ -114,12 +115,19 @@ function DailyPaymentForm({
   }, [memberId, startDate, endDate, allPayments, holidaySet, defaultAmount, overridesMap]);
 
   const selected = days.filter((p) => !excluded.has(p.period));
-  const total = selected.reduce((sum, p) => sum + p.owed, 0);
+
+  function getAmount(p: PeriodDue) {
+    return amounts.get(p.period) ?? p.owed;
+  }
+
+  const total = selected.reduce((sum, p) => sum + getAmount(p), 0);
 
   const formRef = useRef<HTMLFormElement>(null);
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
-      const periods = selected.map((p) => ({ period: p.period, amount: p.owed }));
+      const periods = selected
+        .filter((p) => getAmount(p) > 0)
+        .map((p) => ({ period: p.period, amount: getAmount(p) }));
       formData.set("periods", JSON.stringify(periods));
 
       const result = await recordPayments(formData);
@@ -129,6 +137,7 @@ function DailyPaymentForm({
         setStartDate(todayStr);
         setEndDate(todayStr);
         setExcluded(new Set());
+        setAmounts(new Map());
       }
       return result ?? null;
     },
@@ -140,6 +149,16 @@ function DailyPaymentForm({
       const next = new Set(prev);
       if (next.has(period)) next.delete(period);
       else next.add(period);
+      return next;
+    });
+  }
+
+  function changeAmount(period: string, amount: number) {
+    setAmounts((prev) => new Map(prev).set(period, amount));
+    setExcluded((prev) => {
+      if (!prev.has(period)) return prev;
+      const next = new Set(prev);
+      next.delete(period);
       return next;
     });
   }
@@ -208,8 +227,10 @@ function DailyPaymentForm({
                 <PeriodRow
                   key={p.period}
                   {...p}
+                  amount={getAmount(p)}
                   checked={!excluded.has(p.period)}
                   onToggle={toggle}
+                  onAmountChange={changeAmount}
                 />
               ))}
             </div>

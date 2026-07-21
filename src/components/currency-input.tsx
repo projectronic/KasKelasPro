@@ -23,6 +23,7 @@ export function CurrencyInput({
   required,
   disabled,
   placeholder = "0",
+  className,
 }: {
   id?: string;
   name: string;
@@ -32,6 +33,7 @@ export function CurrencyInput({
   required?: boolean;
   disabled?: boolean;
   placeholder?: string;
+  className?: string;
 }) {
   const autoId = useId();
   const inputId = id ?? autoId;
@@ -60,6 +62,7 @@ export function CurrencyInput({
         required={required}
         disabled={disabled}
         placeholder={placeholder}
+        className={className}
       />
     </>
   );
