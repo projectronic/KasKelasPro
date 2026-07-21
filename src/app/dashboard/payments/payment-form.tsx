@@ -1,0 +1,113 @@
+"use client";
+
+import { useActionState, useMemo, useRef, useState } from "react";
+import { recordPayment } from "./actions";
+import { currentPeriod, getRateForPeriod } from "@/lib/dues";
+import type { IuranType } from "@/lib/supabase/types";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+type ActionState = { error?: string } | null;
+
+export function PaymentForm({
+  members,
+  iuranType,
+  defaultAmount,
+  overrides,
+}: {
+  members: { id: string; full_name: string }[];
+  iuranType: IuranType;
+  defaultAmount: number;
+  overrides: { period: string; amount: number }[];
+}) {
+  const overridesMap = useMemo(
+    () => new Map(overrides.map((o) => [o.period, o.amount])),
+    [overrides]
+  );
+  const today = useMemo(() => new Date(), []);
+  const initialPeriod = currentPeriod(iuranType, today);
+
+  const [period, setPeriod] = useState(initialPeriod);
+  const [amount, setAmount] = useState(
+    getRateForPeriod(initialPeriod, defaultAmount, overridesMap)
+  );
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, formAction, isPending] = useActionState<ActionState, FormData>(
+    async (_prevState, formData) => {
+      const result = await recordPayment(formData);
+      if (!result?.error) {
+        formRef.current?.reset();
+        setPeriod(initialPeriod);
+        setAmount(getRateForPeriod(initialPeriod, defaultAmount, overridesMap));
+      }
+      return result ?? null;
+    },
+    null
+  );
+
+  return (
+    <form
+      ref={formRef}
+      action={formAction}
+      className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+    >
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="member_id">Anggota</Label>
+        <select
+          id="member_id"
+          name="member_id"
+          required
+          className="h-9 rounded-md border bg-transparent px-3 text-sm"
+        >
+          <option value="">Pilih anggota</option>
+          {members.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.full_name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="period">
+          Periode ({iuranType === "bulanan" ? "YYYY-MM" : "YYYY-MM-DD"})
+        </Label>
+        <Input
+          id="period"
+          name="period"
+          value={period}
+          onChange={(e) => {
+            setPeriod(e.target.value);
+            setAmount(getRateForPeriod(e.target.value, defaultAmount, overridesMap));
+          }}
+          required
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="amount">Nominal (Rp)</Label>
+        <Input
+          id="amount"
+          name="amount"
+          type="number"
+          min={0}
+          value={amount}
+          onChange={(e) => setAmount(Number(e.target.value))}
+          required
+        />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="note">Catatan (opsional)</Label>
+        <Input id="note" name="note" placeholder="mis. bayar 2 bulan sekaligus" />
+      </div>
+      <div className="col-span-full flex flex-col gap-2">
+        {state?.error && (
+          <p className="text-sm text-destructive">{state.error}</p>
+        )}
+        <Button type="submit" disabled={isPending} className="w-fit">
+          {isPending ? "Menyimpan..." : "Catat Pembayaran"}
+        </Button>
+      </div>
+    </form>
+  );
+}
