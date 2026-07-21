@@ -19,9 +19,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { TotalUangRadialChart } from "@/components/dashboard/total-uang-radial-chart";
+import { PaymentStatusDonutChart } from "@/components/dashboard/payment-status-donut-chart";
 import { MonthlyComboChart } from "@/components/dashboard/monthly-combo-chart";
 import { computeMonthlyFlow } from "@/lib/dashboard-stats";
-import { computeMemberDues } from "@/lib/dues";
+import { computeMemberDues, currentPeriod } from "@/lib/dues";
 
 function formatRupiah(amount: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -45,6 +46,7 @@ export default async function DashboardPage() {
     { data: overrides },
     { data: payments },
     { data: walletTransactions },
+    { data: accountTypes },
   ] = await Promise.all([
     supabase
       .from("settings")
@@ -56,10 +58,13 @@ export default async function DashboardPage() {
     supabase.from("dues_overrides").select("period, amount"),
     supabase.from("payments").select("member_id, period, amount"),
     supabase.from("wallet_transactions").select("type, amount, created_at"),
+    supabase.from("profiles").select("account_type").eq("approved", true),
   ]);
 
   const canManage = profile?.role === "admin" || profile?.role === "editor";
   const jumlahSiswa = activeMembers?.length ?? 0;
+  const akunSiswa = (accountTypes ?? []).filter((p) => p.account_type === "siswa").length;
+  const akunOrangTua = (accountTypes ?? []).filter((p) => p.account_type === "orang_tua").length;
   const dompet = wallets?.find((w) => w.wallet === "dompet")?.balance ?? 0;
   const bank = wallets?.find((w) => w.wallet === "bank")?.balance ?? 0;
   const totalSaldo = dompet + bank;
@@ -101,6 +106,12 @@ export default async function DashboardPage() {
   rekapRows.sort((a, b) => b.dues.totalOwed - a.dues.totalOwed);
   const totalTunggakan = rekapRows.reduce((sum, r) => sum + r.dues.totalOwed, 0);
 
+  const thisPeriod = currentPeriod(settings?.iuran_type ?? "bulanan", today);
+  const belumBayarBulanIni = rekapRows.filter((r) =>
+    r.dues.unpaidPeriods.some((p) => p.period === thisPeriod)
+  ).length;
+  const lunasBulanIni = rekapRows.length - belumBayarBulanIni;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -118,7 +129,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal text-muted-foreground">
@@ -149,6 +160,30 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal text-muted-foreground">
+              Jumlah Siswa
+            </CardTitle>
+            <CardAction>
+              <Users className="size-4 text-muted-foreground" />
+            </CardAction>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <span className="text-2xl font-semibold tracking-tight">{jumlahSiswa}</span>
+            <div className="flex flex-col gap-1.5 text-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">Akun Siswa</span>
+                <span className="font-medium">{akunSiswa}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">Akun Orang Tua</span>
+                <span className="font-medium">{akunOrangTua}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-normal text-muted-foreground">
               Total Uang
             </CardTitle>
             <CardDescription>Saldo saat ini vs total pengeluaran sepanjang waktu</CardDescription>
@@ -161,14 +196,12 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal text-muted-foreground">
-              Jumlah Siswa
+              Status Bulan Ini
             </CardTitle>
-            <CardAction>
-              <Users className="size-4 text-muted-foreground" />
-            </CardAction>
+            <CardDescription className="capitalize">Periode {thisPeriod}</CardDescription>
           </CardHeader>
-          <CardContent className="text-2xl font-semibold tracking-tight">
-            {jumlahSiswa}
+          <CardContent>
+            <PaymentStatusDonutChart lunas={lunasBulanIni} belumBayar={belumBayarBulanIni} />
           </CardContent>
         </Card>
       </div>

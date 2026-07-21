@@ -92,14 +92,14 @@ export function TotalUangRadialChart({
           <RadialBar
             dataKey="saldo"
             stackId="a"
-            cornerRadius={4}
+            cornerRadius={10}
             fill="var(--color-saldo)"
             className="stroke-card stroke-2"
           />
           <RadialBar
             dataKey="pengeluaran"
             stackId="a"
-            cornerRadius={4}
+            cornerRadius={10}
             fill="var(--color-pengeluaran)"
             className="stroke-card stroke-2"
           />
