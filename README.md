@@ -8,7 +8,7 @@
 [![Deploy on Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fprojectronic%2FKasKelasPro)
 [![Status](https://img.shields.io/badge/status-work%20in%20progress-orange)]()
 
-> 🚧 **Status: dalam pengembangan aktif.** Struktur database, halaman, dan tombol deploy akan terus diperbarui. Lihat [Roadmap](#-roadmap) untuk progres.
+> 🚧 **Status: dalam pengembangan aktif.** Struktur database, halaman, dan tombol deploy akan terus diperbarui.
 
 ---
 
@@ -27,7 +27,6 @@
     - [4. Pemakaian pertama](#4-pemakaian-pertama)
   - [🔑 Environment Variables](#-environment-variables)
   - [🛡️ Privasi \& Tanggung Jawab](#️-privasi--tanggung-jawab)
-  - [🗺️ Roadmap](#️-roadmap)
   - [🤝 Kontribusi](#-kontribusi)
   - [🙏 Kredit](#-kredit)
   - [📄 Lisensi](#-lisensi)
@@ -148,30 +147,6 @@ KasKelasPro menyimpan **data pribadi** (nama, email, nomor telepon siswa maupun 
 - **Setiap pengelola/deployer bertanggung jawab penuh** atas keamanan, penyimpanan, dan kepatuhan hukum terkait data yang dimasukkan ke instance mereka masing-masing, termasuk kepatuhan terhadap **UU Perlindungan Data Pribadi (UU No. 27 Tahun 2022)**.
 - Disarankan meminta persetujuan siswa/orang tua sebelum memasukkan data kontak mereka.
 - Proyek ini disediakan **"as is"** tanpa jaminan apa pun (lihat [Lisensi](#-lisensi)) — penulis/kontributor tidak bertanggung jawab atas kebocoran atau penyalahgunaan data pada instance pihak ketiga.
-
-## 🗺️ Roadmap
-
-- [x] Scaffold project Next.js + shadcn/ui + koneksi Supabase
-- [x] Skema database (anggota, settings, dues_overrides, payments, wallet_transactions, roles) + RLS policy — lihat [`supabase/schema.sql`](./supabase/schema.sql)
-- [x] Autentikasi + pendaftaran terbuka dengan approval admin/editor (bukan whitelist)
-- [x] Toggle mode iuran harian/bulanan + pengecualian per periode di Settings
-- [x] Halaman input pembayaran iuran & riwayat penarikan/transfer dompet↔bank
-- [x] Rekap tunggakan otomatis per anggota, diurutkan dari penunggak terbanyak
-- [x] Tombol Deploy to Vercel + panduan setup Supabase step-by-step lengkap
-- [x] Halaman kelola role pengguna (ubah viewer/editor/admin dari UI)
-- [x] Reset password mandiri (self-service) + reset oleh admin
-- [x] Dark/light mode toggle
-- [x] Pendaftaran terpisah siswa/orang tua (akun & password sendiri-sendiri), dicocokkan otomatis ke anggota yang sama by nama
-- [x] Halaman edit Anggota (betulkan data / salah sambung siswa↔orang tua)
-- [x] Tanggal mulai kas di Settings + checklist pembayaran multi-bulan (mode bulanan) + input tanggal di pembayaran/penarikan/transfer
-- [x] Halaman Riwayat aktivitas (audit log pembayaran, mutasi dana, approval)
-- [x] Nama kelas dinamis di tab & halaman login/daftar, format ribuan di semua input nominal, telepon jadi link WhatsApp, jabatan custom (label saja) untuk admin/editor
-- [x] Sidebar navigasi (collapsible di desktop, drawer di mobile) menggantikan top nav bar, beserta skeleton loading state
-- [x] Nama Sekolah terpisah dari Nama Kelas di Pengaturan, ditampilkan sebagai subjudul sidebar
-- [x] Checklist pembayaran multi-periode untuk mode harian (rentang tanggal mulai/akhir, akhir pekan & hari libur otomatis dikecualikan)
-- [x] Bayar di muka (prepayment) untuk mode bulanan — checklist bulan-bulan berikutnya yang belum jatuh tempo, bukan cuma tunggakan
-- [x] Hari Libur: fetch otomatis dari API kalender nasional + kelola manual (tambah/hapus) di Pengaturan
-- [ ] Role & permission yang benar-benar dinamis (admin bikin role + pilih izinnya sendiri) — lihat penjelasan di [Role & Hak Akses](#-role--hak-akses)
 
 ## 🤝 Kontribusi
 
