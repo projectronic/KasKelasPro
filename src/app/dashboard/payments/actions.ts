@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 
 function revalidatePaymentPaths() {
   revalidatePath("/dashboard/payments");
-  revalidatePath("/dashboard/rekap");
   revalidatePath("/dashboard");
 }
 

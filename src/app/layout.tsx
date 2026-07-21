@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     .single();
 
   return {
-    title: settings?.class_name || "KasKelasPro",
+    title: settings?.class_name ? `Kas Kelas ${settings.class_name}` : "KasKelasPro",
     description: "Dashboard kas kelas — Next.js, Supabase, dan Vercel.",
   };
 }

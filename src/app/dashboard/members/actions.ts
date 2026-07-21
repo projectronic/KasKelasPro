@@ -45,6 +45,5 @@ export async function editMember(formData: FormData) {
   }
 
   revalidatePath("/dashboard/members");
-  revalidatePath("/dashboard/rekap");
   revalidatePath("/dashboard");
 }

@@ -24,7 +24,6 @@ export async function updateSettings(formData: FormData) {
 
   revalidatePath("/dashboard/settings");
   revalidatePath("/dashboard");
-  revalidatePath("/dashboard/rekap");
   revalidatePath("/dashboard/payments");
 }
 

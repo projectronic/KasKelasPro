@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  ClipboardList,
   Users,
   Wallet,
   Settings,
@@ -67,7 +66,6 @@ export function DashboardSidebar({
 
   const navItems: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, show: true },
-    { href: "/dashboard/rekap", label: "Rekap", icon: ClipboardList, show: true },
     { href: "/dashboard/members", label: "Anggota", icon: Users, show: true },
     { href: "/dashboard/payments", label: "Pembayaran", icon: Landmark, show: canManage },
     { href: "/dashboard/wallet", label: "Dompet", icon: Wallet, show: canManage },
