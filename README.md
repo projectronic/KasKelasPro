@@ -8,9 +8,9 @@
 [![UI: shadcn/ui](https://img.shields.io/badge/UI-shadcn%2Fui-000000?logo=shadcnui)](https://ui.shadcn.com)
 [![Charts: Recharts](https://img.shields.io/badge/Charts-Recharts-22b5bf)](https://recharts.org)
 [![Deploy on Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fprojectronic%2FKasKelasPro)
-[![Status](https://img.shields.io/badge/status-work%20in%20progress-orange)]()
+[![Status](https://img.shields.io/badge/status-ready%20to%20deploy-brightgreen)]()
 
-> 🚧 **Status: dalam pengembangan aktif.** Struktur database, halaman, dan tombol deploy akan terus diperbarui.
+> ✅ **Status: siap deploy.** Fitur inti (iuran harian/bulanan, pembayaran, dompet, role & approval, dashboard) sudah lengkap dan bisa langsung dipakai — pengembangan lanjutan tetap terbuka lewat Issue/PR.
 
 ---
 
@@ -164,7 +164,12 @@ Terinspirasi dari [**KasKelas**](https://github.com/xDzaky/KasKelas) oleh [@xDza
 
 ## 📄 Lisensi
 
-[GNU AGPL v3](./LICENSE) — bebas digunakan, dimodifikasi, dan didistribusikan ulang. Bedanya dengan lisensi permisif (MIT/Apache): kalau kamu menjalankan versi modifikasi sebagai layanan (mis. di-hosting untuk pihak lain, termasuk secara komersial), kamu **wajib merilis source code versi modifikasi tersebut** ke pengguna layanan itu juga — celah "ambil kode open-source, modifikasi, jual sebagai SaaS tertutup" yang biasanya lolos di lisensi permisif, ditutup oleh AGPL.
+[GNU AGPL v3](./LICENSE) (Affero General Public License) — lisensi **copyleft**: kamu bebas menggunakan, memodifikasi, dan mendistribusikan ulang KasKelasPro, dengan beberapa syarat:
+
+- **Source code tetap terbuka.** Versi asli maupun hasil modifikasi yang kamu distribusikan/jalankan harus tetap dirilis di bawah lisensi AGPL v3 yang sama — tidak boleh ditutup atau dilisensikan ulang jadi proprietary.
+- **Klausul network use.** Kalau kamu menjalankan versi modifikasi sebagai layanan yang diakses lewat jaringan (mis. di-hosting untuk sekolah/kelas lain, termasuk secara komersial), kamu **wajib menyediakan source code versi modifikasi tersebut** ke pengguna layanan itu — ini yang membedakan AGPL dari GPL biasa, yang syaratnya cuma berlaku saat software-nya didistribusikan sebagai binary/kode, bukan dipakai lewat jaringan.
+- **Perubahan harus terdokumentasi** — file yang diubah perlu mencantumkan catatan bahwa file itu sudah dimodifikasi.
+- **Tanpa jaminan.** Software disediakan "as is", tanpa jaminan apa pun; lihat [bagian Privasi & Tanggung Jawab](#️-privasi--tanggung-jawab) juga.
 
 ---
  
