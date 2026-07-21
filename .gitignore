@@ -23,6 +23,10 @@ dist/
 supabase/.branches
 supabase/.temp
 
+# One-off upgrade scripts for the single already-live database — not
+# needed by fresh installs (schema.sql covers those), so kept local only.
+supabase/migrations/
+
 # Testing
 coverage/
 

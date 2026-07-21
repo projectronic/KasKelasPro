@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PaymentForm } from "./payment-form";
+import { PaymentRowActions } from "./payment-row-actions";
 
 export default async function PaymentsPage() {
   const supabase = await createClient();
@@ -111,6 +112,7 @@ export default async function PaymentsPage() {
                       <TableHead>Nominal</TableHead>
                       <TableHead>Tanggal</TableHead>
                       <TableHead>Catatan</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -125,6 +127,12 @@ export default async function PaymentsPage() {
                           {new Date(p.paid_at).toLocaleDateString("id-ID")}
                         </TableCell>
                         <TableCell>{p.note ?? "-"}</TableCell>
+                        <TableCell className="text-right">
+                          <PaymentRowActions
+                            payment={p}
+                            memberName={memberNames.get(p.member_id) ?? "-"}
+                          />
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -159,6 +167,12 @@ export default async function PaymentsPage() {
                           <span className="text-right text-foreground">{p.note}</span>
                         </div>
                       )}
+                    </div>
+                    <div className="mt-3 border-t pt-3">
+                      <PaymentRowActions
+                        payment={p}
+                        memberName={memberNames.get(p.member_id) ?? "-"}
+                      />
                     </div>
                   </div>
                 ))}

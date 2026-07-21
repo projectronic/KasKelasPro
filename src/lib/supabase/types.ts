@@ -172,6 +172,21 @@ export type Database = {
         };
         Returns: PaymentRow;
       };
+      correct_payment: {
+        Args: {
+          p_payment_id: string;
+          p_period: string;
+          p_amount: number;
+          p_note?: string | null;
+        };
+        Returns: PaymentRow;
+      };
+      delete_payment: {
+        Args: {
+          p_payment_id: string;
+        };
+        Returns: undefined;
+      };
       record_withdrawal: {
         Args: {
           p_wallet: WalletName;

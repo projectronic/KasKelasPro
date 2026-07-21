@@ -49,3 +49,50 @@ export async function recordPayments(formData: FormData) {
 
   revalidatePaymentPaths();
 }
+
+export async function correctPayment(formData: FormData) {
+  const supabase = await createClient();
+
+  const paymentId = formData.get("payment_id") as string;
+  const period = formData.get("period") as string;
+  const amount = Number(formData.get("amount"));
+  const note = (formData.get("note") as string) || null;
+
+  if (!paymentId || !period || !amount) {
+    return { error: "Periode dan nominal wajib diisi." };
+  }
+
+  const { error } = await supabase.rpc("correct_payment", {
+    p_payment_id: paymentId,
+    p_period: period,
+    p_amount: amount,
+    p_note: note,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePaymentPaths();
+  revalidatePath("/dashboard/riwayat");
+}
+
+export async function deletePayment(formData: FormData) {
+  const supabase = await createClient();
+
+  const paymentId = formData.get("payment_id") as string;
+  if (!paymentId) {
+    return { error: "Pembayaran tidak ditemukan." };
+  }
+
+  const { error } = await supabase.rpc("delete_payment", {
+    p_payment_id: paymentId,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePaymentPaths();
+  revalidatePath("/dashboard/riwayat");
+}

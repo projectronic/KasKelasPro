@@ -395,6 +395,94 @@ begin
 end;
 $$;
 
+-- Lets admin/editor fix a wrongly-recorded payment (typo'd amount, wrong
+-- period) instead of editing the database directly. Keeps the linked
+-- wallet_transactions row in sync and leaves a trace in activity_log.
+create or replace function public.correct_payment(
+  p_payment_id uuid,
+  p_period text,
+  p_amount numeric,
+  p_note text default null
+)
+returns public.payments
+language plpgsql
+security invoker
+as $$
+declare
+  old_payment public.payments;
+  updated_payment public.payments;
+  member_name text;
+begin
+  if not public.is_editor_or_admin() then
+    raise exception 'Hanya editor atau admin yang bisa mengoreksi pembayaran.';
+  end if;
+
+  select * into old_payment from public.payments where id = p_payment_id;
+  if old_payment.id is null then
+    raise exception 'Pembayaran tidak ditemukan.';
+  end if;
+
+  update public.payments
+  set period = p_period, amount = p_amount, note = p_note
+  where id = p_payment_id
+  returning * into updated_payment;
+
+  update public.wallet_transactions
+  set amount = p_amount, note = p_note
+  where reference_type = 'payment' and reference_id = p_payment_id;
+
+  select full_name into member_name from public.members where id = old_payment.member_id;
+  insert into public.activity_log (actor_id, action)
+  values (
+    auth.uid(),
+    format(
+      'Mengoreksi pembayaran %s (Rp %s, periode %s -> Rp %s, periode %s)',
+      member_name, old_payment.amount, old_payment.period, p_amount, p_period
+    )
+  );
+
+  return updated_payment;
+end;
+$$;
+
+-- Lets admin/editor delete a wrongly-recorded payment. The row itself is
+-- gone afterward, but activity_log always keeps a trace of what was removed.
+create or replace function public.delete_payment(p_payment_id uuid)
+returns void
+language plpgsql
+security invoker
+as $$
+declare
+  old_payment public.payments;
+  member_name text;
+begin
+  if not public.is_editor_or_admin() then
+    raise exception 'Hanya editor atau admin yang bisa menghapus pembayaran.';
+  end if;
+
+  select * into old_payment from public.payments where id = p_payment_id;
+  if old_payment.id is null then
+    raise exception 'Pembayaran tidak ditemukan.';
+  end if;
+
+  select full_name into member_name from public.members where id = old_payment.member_id;
+
+  delete from public.wallet_transactions
+  where reference_type = 'payment' and reference_id = p_payment_id;
+
+  delete from public.payments where id = p_payment_id;
+
+  insert into public.activity_log (actor_id, action)
+  values (
+    auth.uid(),
+    format(
+      'Menghapus pembayaran Rp %s dari %s untuk periode %s',
+      old_payment.amount, member_name, old_payment.period
+    )
+  );
+end;
+$$;
+
 create or replace function public.record_withdrawal(
   p_wallet text,
   p_amount numeric,
