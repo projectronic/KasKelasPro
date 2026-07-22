@@ -99,7 +99,10 @@ export default async function UsersPage() {
                   </TableHeader>
                   <TableBody>
                     {profiles.map((p) => (
-                      <TableRow key={p.id}>
+                      <TableRow
+                        key={p.id}
+                        className={!p.approved ? "bg-amber-500/10 dark:bg-amber-500/15" : undefined}
+                      >
                         <TableCell className="font-medium">
                           {isAdmin ? (
                             <NameRowForm profileId={p.id} fullName={p.full_name} />
@@ -172,7 +175,12 @@ export default async function UsersPage() {
 
               <div className="grid gap-3 md:hidden">
                 {profiles.map((p) => (
-                  <div key={p.id} className="flex flex-col gap-3 rounded-lg border p-4">
+                  <div
+                    key={p.id}
+                    className={`flex flex-col gap-3 rounded-lg border p-4 ${
+                      !p.approved ? "border-l-4 border-l-amber-500 bg-amber-500/10 dark:bg-amber-500/15" : ""
+                    }`}
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         {isAdmin ? (
