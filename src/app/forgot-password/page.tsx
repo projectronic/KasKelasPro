@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
         <ThemeToggle />
       </div>
       <Card className="w-full max-w-sm">
-        <CardHeader className="items-center text-center">
+        <CardHeader className="items-center justify-items-center text-center">
           <div className="mb-1 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Landmark className="size-5" />
           </div>
