@@ -134,6 +134,8 @@ Alasannya: hak akses ditegakkan lewat RLS (Row Level Security) di database, buka
 3. Sebarkan link `/signup` ke siswa/orang tua. Setiap pendaftar baru berstatus **pending** sampai kamu approve lewat halaman **Pengguna**. (Atau tambahkan anggota manual lewat **Anggota** kalau tidak semua orang akan bikin akun sendiri.)
 4. **Pengguna**: kalau perlu, promosikan salah satu akun jadi `editor` (mis. bendahara kedua) lewat halaman ini.
 
+> 📘 Untuk penggunaan sehari-hari (catat pembayaran, approve pendaftaran, koreksi kesalahan, dsb.), lihat [Panduan Pengurus](./docs/PANDUAN-PENGURUS.md) — panduan ini fokus ke setup/deploy, bukan operasional harian.
+
 ## 🔑 Environment Variables
 
 Salin [`.env.example`](./.env.example) menjadi `.env.local` lalu isi dengan kredensial project Supabase-mu sendiri:

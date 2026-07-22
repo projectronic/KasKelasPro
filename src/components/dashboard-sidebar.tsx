@@ -10,6 +10,7 @@ import {
   UserCog,
   History,
   Landmark,
+  CircleHelp,
   LogOut,
   ChevronsUpDown,
 } from "lucide-react";
@@ -72,6 +73,7 @@ export function DashboardSidebar({
     { href: "/dashboard/settings", label: "Pengaturan", icon: Settings, show: isAdmin },
     { href: "/dashboard/users", label: "Pengguna", icon: UserCog, show: canManage },
     { href: "/dashboard/riwayat", label: "Riwayat", icon: History, show: canManage },
+    { href: "/dashboard/panduan", label: "Panduan", icon: CircleHelp, show: canManage },
   ];
 
   const displayName = fullName ?? email ?? "Pengguna";
